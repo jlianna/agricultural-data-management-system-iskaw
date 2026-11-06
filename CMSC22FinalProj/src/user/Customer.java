@@ -6,4 +6,5 @@ public class Customer extends User {
 		super(userId, username, password, role);
 		// TODO Auto-generated constructor stub
 	}
+	
 }

@@ -5,5 +5,4 @@ public enum Role {
 	MANAGER,
 	CLERK,
 	CUSTOMER
-	
 }

@@ -20,7 +20,6 @@ public abstract class User {
         return this.password.equals(inputPassword);
     }
     
-
     // Getters and Setters
     public String getUserId() { return userId; }
     public String getUsername() { return username; }
