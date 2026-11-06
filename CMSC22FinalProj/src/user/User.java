@@ -19,6 +19,7 @@ public abstract class User {
     public boolean authenticate(String inputPassword) {
         return this.password.equals(inputPassword);
     }
+    
 
     // Getters and Setters
     public String getUserId() { return userId; }

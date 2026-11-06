@@ -6,5 +6,4 @@ public class Clerk extends User {
 		super(userId, username, password, role);
 		// TODO Auto-generated constructor stub
 	}
-
 }
