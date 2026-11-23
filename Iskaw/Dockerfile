@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 COPY . .
-RUN mvn clean compile -DskipTests
+RUN mvn clean jpro:release-dir -DskipTests
+RUN chmod +x target/iskaw-dairyhub-jpro/bin/start.sh
 
-ENV MAVEN_OPTS="-Xmx128m"
 EXPOSE 8080
-CMD ["mvn", "jpro:run"]
+CMD ["./target/iskaw-dairyhub-jpro/bin/start.sh"]
