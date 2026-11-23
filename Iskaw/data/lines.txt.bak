@@ -1,0 +1,5 @@
+# Iskaw sale/order items: owner id|product id|product name|quantity|price paid
+T-00001|P-1B6E44E6|Beef Shank|1|420.0
+T-00001|P-9C61F92B|Brisket with Bones|3|380.0
+O-00001|P-1B6E44E6|Beef Shank|1|420.0
+O-00001|P-9C61F92B|Brisket with Bones|3|380.0
