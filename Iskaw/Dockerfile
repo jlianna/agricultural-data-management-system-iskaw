@@ -1,6 +1,7 @@
-FROM maven:3.9-eclipse-temurin-21
+FROM maven:3.9-eclipse-temurin-25
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb \
     libgtk-3-0 \
     libgl1 \
     libx11-6 \
@@ -18,4 +19,4 @@ RUN mvn clean jpro:release-dir -DskipTests
 RUN chmod +x target/iskaw-dairyhub-jpro/bin/start.sh
 
 EXPOSE 8080
-CMD ["./target/iskaw-dairyhub-jpro/bin/start.sh"]
+CMD ["xvfb-run", "-a", "./target/iskaw-dairyhub-jpro/bin/start.sh"]
