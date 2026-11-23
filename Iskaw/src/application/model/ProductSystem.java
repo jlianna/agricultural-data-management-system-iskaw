@@ -74,6 +74,7 @@ public class ProductSystem {
                 // Add the new Iskaw products to older saved files as well
                 // This will keep the products available even if the user already has saved data
                 addIskawProductsIfMissing();
+                attachDefaultImages();
                 save();
                 return;
             } catch (IOException e) {
@@ -86,6 +87,7 @@ public class ProductSystem {
         }
         store = new Store();
         seed();
+        attachDefaultImages();
         save();
     }
 
@@ -207,6 +209,22 @@ public class ProductSystem {
 
         if (!alreadyExists) {
             addSeed(name, desc, category, unit, price, stock);
+        }
+    }
+    
+    // add Images
+    private void attachDefaultImages() {
+        Path imgDir = files.images();
+        if (!Files.isDirectory(imgDir)) return;
+        for (Product p : store.products) {
+            if (p.hasImage() && Files.isRegularFile(imgDir.resolve(p.getImageFile()))) continue;
+            for (String ext : IMAGE_TYPES) {
+                String candidate = p.getName() + "." + ext;
+                if (Files.isRegularFile(imgDir.resolve(candidate))) {
+                    p.setImageFile(candidate);
+                    break;
+                }
+            }
         }
     }
 

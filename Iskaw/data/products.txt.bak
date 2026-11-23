@@ -1,46 +1,46 @@
 # Iskaw products: id|name|description|category|unit|price|stock|photo file
-P-B1DE43FF|Fresh Carabao Milk|Rich, creamy whole carabao milk, pasteurized and chilled.|Milk|1 L|95.0|40|\N
-P-1C20A012|Fresh Cow's Milk|Farm-fresh whole cow's milk, pasteurized.|Milk|1 L|85.0|55|\N
-P-3509E6D5|Chocolate Milk|Low-sugar chocolate drink made with fresh milk.|Milk|250 ml|35.0|70|\N
-P-7FCC92B1|Kesong Puti|Soft, lightly salted white cheese made from carabao milk.|Cheese|200 g|120.0|18|\N
-P-81938400|Carabao Mozzarella|Stretchy mozzarella, great for pizza and baking.|Cheese|250 g|210.0|9|\N
-P-C773D649|Cream Cheese|Smooth spreadable cream cheese.|Cheese|150 g|130.0|22|\N
-P-A4BEA6E7|Plain Yogurt|Thick, unsweetened yogurt with live cultures.|Yogurt|500 g|110.0|30|\N
-P-B8DA3671|Strawberry Yogurt Drink|Drinkable yogurt blended with real strawberries.|Yogurt|250 ml|45.0|6|\N
-P-09E1FA50|Salted Butter|Churned butter from fresh cream, lightly salted.|Butter & Cream|200 g|150.0|14|\N
+P-B1DE43FF|Fresh Carabao Milk|Rich, creamy whole carabao milk, pasteurized and chilled.|Milk|1 L|95.0|40|Fresh Carabao Milk.png
+P-1C20A012|Fresh Cow's Milk|Farm-fresh whole cow's milk, pasteurized.|Milk|1 L|85.0|55|Fresh Cow's Milk.png
+P-3509E6D5|Chocolate Milk|Low-sugar chocolate drink made with fresh milk.|Milk|250 ml|35.0|70|Chocolate Milk.png
+P-7FCC92B1|Kesong Puti|Soft, lightly salted white cheese made from carabao milk.|Cheese|200 g|120.0|18|Kesong Puti.png
+P-81938400|Carabao Mozzarella|Stretchy mozzarella, great for pizza and baking.|Cheese|250 g|210.0|9|Carabao Mozzarella.png
+P-C773D649|Cream Cheese|Smooth spreadable cream cheese.|Cheese|150 g|130.0|22|Cream Cheese.png
+P-A4BEA6E7|Plain Yogurt|Thick, unsweetened yogurt with live cultures.|Yogurt|500 g|110.0|30|Plain Yogurt.png
+P-B8DA3671|Strawberry Yogurt Drink|Drinkable yogurt blended with real strawberries.|Yogurt|250 ml|45.0|6|Strawberry Yogurt Drink.png
+P-09E1FA50|Salted Butter|Churned butter from fresh cream, lightly salted.|Butter & Cream|200 g|150.0|14|Salted Butter.png
 P-87BFE78C|All-Purpose Cream|Chilled table cream for desserts and sauces.|Butter & Cream|250 ml|70.0|0|\N
-P-286B23F0|Ube Ice Cream|Creamy purple-yam ice cream.|Frozen|1 L|260.0|12|\N
-P-5988009B|Pastillas de Leche|Traditional milk candy, pack of 10 pieces.|Sweets|10 pcs|60.0|45|\N
-P-B5D0A748|Chuck|Beef cut, priced per kilogram.|Beef|1 kg|420.0|20|\N
-P-9C61F92B|Brisket with Bones|Beef cut, priced per kilogram.|Beef|1 kg|380.0|17|\N
-P-FD727F49|Brisket, Boneless|Boneless beef brisket, priced per kilogram.|Beef|1 kg|480.0|20|\N
-P-37676866|Beef Cubes|Beef cubes, priced per kilogram.|Beef|1 kg|450.0|20|\N
-P-1B6E44E6|Beef Shank|Beef shank, priced per kilogram.|Beef|1 kg|420.0|19|\N
-P-7161F3D2|Beef Ribs|Beef ribs, priced per kilogram.|Beef|1 kg|400.0|20|\N
-P-7075066F|Short Ribs|Short ribs, priced per kilogram.|Beef|1 kg|450.0|20|\N
-P-6D0C741D|Sirloin|Sirloin, priced per kilogram.|Beef|1 kg|550.0|20|\N
-P-6D135C95|Tenderloin|Tenderloin, priced per kilogram.|Beef|1 kg|650.0|20|\N
-P-FA6659CD|Ribeye|Ribeye, priced per kilogram.|Beef|1 kg|600.0|20|\N
-P-8B3F39A7|Ground Beef|Ground beef, priced per kilogram.|Beef|1 kg|420.0|20|\N
-P-75657F3E|Beef Round|Beef round, priced per kilogram.|Beef|1 kg|450.0|20|\N
-P-3A548885|Flank Steak|Flank steak, priced per kilogram.|Beef|1 kg|480.0|20|\N
-P-A8C7146A|Beef Plate|Beef plate, priced per kilogram.|Beef|1 kg|420.0|20|\N
-P-6D08E7F0|Beef Offal|Edible beef offal, priced per kilogram.|Beef|1 kg|280.0|20|\N
-P-049936C4|Full Hide - Cognac|Cowhide color: Cognac.|Cowhide|1 hide|10800.0|5|\N
-P-5B3A310E|Half Hide - Cognac|Cowhide color: Cognac.|Cowhide|1/2 hide|5850.0|5|\N
-P-DE3DDBBD|Quarter Hide - Cognac|Cowhide color: Cognac.|Cowhide|1/4 hide|3150.0|5|\N
-P-13154CAB|Coupon - Cognac|Cowhide color: Cognac.|Cowhide|1 piece|1500.0|5|\N
-P-F670DD76|Double Panel - Cognac|Cowhide color: Cognac.|Cowhide|1 piece|650.0|5|\N
-P-52E93876|Panel - Cognac|Cowhide color: Cognac.|Cowhide|1 piece|350.0|5|\N
-P-6819D4F8|Full Hide - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 hide|10800.0|5|\N
-P-E9C8FE90|Half Hide - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1/2 hide|5850.0|5|\N
-P-E131570B|Quarter Hide - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1/4 hide|3150.0|5|\N
-P-176368B1|Coupon - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 piece|1500.0|5|\N
-P-9CDBAAA4|Double Panel - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 piece|650.0|5|\N
-P-62BD4FC8|Panel - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 piece|350.0|5|\N
-P-DA12BF16|Full Hide - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 hide|10800.0|5|\N
-P-1C6401D2|Half Hide - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1/2 hide|5850.0|5|\N
+P-286B23F0|Ube Ice Cream|Creamy purple-yam ice cream.|Frozen|1 L|260.0|12|Ube Ice Cream.png
+P-5988009B|Pastillas de Leche|Traditional milk candy, pack of 10 pieces.|Sweets|10 pcs|60.0|45|Pastillas de Leche.png
+P-B5D0A748|Chuck|Beef cut, priced per kilogram.|Beef|1 kg|420.0|20|Chuck.png
+P-9C61F92B|Brisket with Bones|Beef cut, priced per kilogram.|Beef|1 kg|380.0|17|Brisket with Bones.png
+P-FD727F49|Brisket, Boneless|Boneless beef brisket, priced per kilogram.|Beef|1 kg|480.0|20|Brisket, Boneless.png
+P-37676866|Beef Cubes|Beef cubes, priced per kilogram.|Beef|1 kg|450.0|20|Beef Cubes.png
+P-1B6E44E6|Beef Shank|Beef shank, priced per kilogram.|Beef|1 kg|420.0|19|Beef Shank.png
+P-7161F3D2|Beef Ribs|Beef ribs, priced per kilogram.|Beef|1 kg|400.0|20|Beef Ribs.png
+P-7075066F|Short Ribs|Short ribs, priced per kilogram.|Beef|1 kg|450.0|20|Short Ribs.png
+P-6D0C741D|Sirloin|Sirloin, priced per kilogram.|Beef|1 kg|550.0|20|Sirloin.png
+P-6D135C95|Tenderloin|Tenderloin, priced per kilogram.|Beef|1 kg|650.0|20|Tenderloin.png
+P-FA6659CD|Ribeye|Ribeye, priced per kilogram.|Beef|1 kg|600.0|20|Ribeye.png
+P-8B3F39A7|Ground Beef|Ground beef, priced per kilogram.|Beef|1 kg|420.0|20|Ground Beef.png
+P-75657F3E|Beef Round|Beef round, priced per kilogram.|Beef|1 kg|450.0|20|Beef Round.png
+P-3A548885|Flank Steak|Flank steak, priced per kilogram.|Beef|1 kg|480.0|20|Flank Steak.png
+P-A8C7146A|Beef Plate|Beef plate, priced per kilogram.|Beef|1 kg|420.0|20|Beef Plate.png
+P-6D08E7F0|Beef Offal|Edible beef offal, priced per kilogram.|Beef|1 kg|280.0|20|Beef Offal.png
+P-049936C4|Full Hide - Cognac|Cowhide color: Cognac.|Cowhide|1 hide|10800.0|5|Full Hide - Cognac.png
+P-5B3A310E|Half Hide - Cognac|Cowhide color: Cognac.|Cowhide|1/2 hide|5850.0|5|Half Hide - Cognac.png
+P-DE3DDBBD|Quarter Hide - Cognac|Cowhide color: Cognac.|Cowhide|1/4 hide|3150.0|5|Quarter Hide - Cognac.png
+P-13154CAB|Coupon - Cognac|Cowhide color: Cognac.|Cowhide|1 piece|1500.0|5|Coupon - Cognac.png
+P-F670DD76|Double Panel - Cognac|Cowhide color: Cognac.|Cowhide|1 piece|650.0|5|Double Panel - Cognac.png
+P-52E93876|Panel - Cognac|Cowhide color: Cognac.|Cowhide|1 piece|350.0|5|Panel - Cognac.png
+P-6819D4F8|Full Hide - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 hide|10800.0|5|Full Hide - Dark Brown.png
+P-E9C8FE90|Half Hide - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1/2 hide|5850.0|5|Half Hide - Dark Brown.png
+P-E131570B|Quarter Hide - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1/4 hide|3150.0|5|Quarter Hide - Dark Brown.png
+P-176368B1|Coupon - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 piece|1500.0|5|Coupon - Dark Brown.png
+P-9CDBAAA4|Double Panel - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 piece|650.0|5|Double Panel - Dark Brown.png
+P-62BD4FC8|Panel - Dark Brown|Cowhide color: Dark Brown.|Cowhide|1 piece|350.0|5|Panel - Dark Brown.png
+P-DA12BF16|Full Hide - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 hide|10800.0|5|Full Hide - Dark Charcoal Gray.png
+P-1C6401D2|Half Hide - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1/2 hide|5850.0|5|Half Hide - Dark Charcoal Gray.png
 P-B5B9F25E|Quarter Hide - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1/4 hide|3150.0|5|\N
-P-C566B99C|Coupon - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 piece|1500.0|5|\N
-P-EE6731BF|Double Panel - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 piece|650.0|5|\N
-P-550E0AC9|Panel - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 piece|350.0|5|\N
+P-C566B99C|Coupon - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 piece|1500.0|5|Coupon - Dark Charcoal Gray.png
+P-EE6731BF|Double Panel - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 piece|650.0|5|Double Panel - Dark Charcoal Gray.png
+P-550E0AC9|Panel - Dark Charcoal Gray|Cowhide color: Dark Charcoal Gray.|Cowhide|1 piece|350.0|5|Panel - Dark Charcoal Gray.png
