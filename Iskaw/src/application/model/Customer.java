@@ -11,6 +11,11 @@ public class Customer extends User {
         super(username, fullName, password);
     }
 
+    /** Used when loading saved data. */
+    public Customer(String username, String fullName, String passwordHash, boolean alreadyHashed) {
+        super(username, fullName, passwordHash, alreadyHashed);
+    }
+
     @Override 
     public String getRole() { 
     	return "Customer"; 

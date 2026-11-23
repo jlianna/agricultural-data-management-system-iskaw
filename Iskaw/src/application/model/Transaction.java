@@ -11,7 +11,7 @@ public abstract class Transaction implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String id;
-    private final LocalDateTime timestamp;
+    private LocalDateTime timestamp;
     private final String recordedBy;
     private boolean voided;
     private String voidedBy;
@@ -21,6 +21,14 @@ public abstract class Transaction implements Serializable {
         this.id = id;
         this.recordedBy = recordedBy;
         this.timestamp = LocalDateTime.now();
+    }
+
+    /** Used when loading saved data: puts back the original time and void state. */
+    public final void restoreState(LocalDateTime timestamp, boolean voided, String voidedBy, LocalDateTime voidedAt) {
+        if (timestamp != null) this.timestamp = timestamp;
+        this.voided = voided;
+        this.voidedBy = voidedBy;
+        this.voidedAt = voidedAt;
     }
 
     public String getId() { return id; }

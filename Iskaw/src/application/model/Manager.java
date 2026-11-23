@@ -8,6 +8,11 @@ public class Manager extends User {
         super(username, fullName, password);
     }
 
+    /** Used when loading saved data. */
+    public Manager(String username, String fullName, String passwordHash, boolean alreadyHashed) {
+        super(username, fullName, passwordHash, alreadyHashed);
+    }
+
     @Override public String getRole() { return "Manager"; }
     @Override public boolean isManager() { return true; }
 }

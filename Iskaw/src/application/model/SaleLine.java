@@ -19,6 +19,15 @@ public class SaleLine implements Serializable {
         this.quantity = quantity;
     }
 
+    /** Used when loading saved data (keeps the price the customer actually paid). */
+    public SaleLine(String productId, String productName, int quantity, double unitPrice) {
+        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero.");
+        this.productId = productId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+    }
+
     public String getProductId() { return productId; }
     public String getProductName() { return productName; }
     public int getQuantity() { return quantity; }

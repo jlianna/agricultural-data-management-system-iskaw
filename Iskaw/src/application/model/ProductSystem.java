@@ -1,5 +1,16 @@
 package application.model;
 
+import application.storage.DataFiles;
+import application.storage.OrderFileReader;
+import application.storage.OrderFileWriter;
+import application.storage.ProductFileReader;
+import application.storage.ProductFileWriter;
+import application.storage.SaleLineFileReader;
+import application.storage.SaleLineFileWriter;
+import application.storage.TransactionFileReader;
+import application.storage.TransactionFileWriter;
+import application.storage.UserFileReader;
+import application.storage.UserFileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -24,7 +35,8 @@ import java.util.stream.Collectors;
 public class ProductSystem {
 
     /** Everything that is written to disk. */
-    private static class Store implements Serializable {
+    /** In-memory data. Also the shape of the old binary save file (kept so old saves can still be imported). */
+    static class Store implements Serializable {
         private static final long serialVersionUID = 1L;
         final List<User> users = new ArrayList<>();
         final List<Product> products = new ArrayList<>();
@@ -35,17 +47,19 @@ public class ProductSystem {
         int orderCounter = 0;
     }
 
-    private final Path dataFile;
+    private final DataFiles files;
     private Store store;
-    /** Set when a corrupted save file had to be set aside during start-up. */
+    /** Set when damaged save files had to be set aside during start-up. */
     private String startupWarning;
 
+    /** Uses the folder {@code data/} next to where the program is run. */
     public ProductSystem() {
-        this(Paths.get("data", "dairyhub.dat"));
+        this(Paths.get("data"));
     }
 
-    public ProductSystem(Path dataFile) {
-        this.dataFile = dataFile;
+    /** @param dataDir folder that holds users.txt, products.txt, transactions.txt, orders.txt and images/ */
+    public ProductSystem(Path dataDir) {
+        this.files = new DataFiles(dataDir);
         load();
     }
 
@@ -54,39 +68,79 @@ public class ProductSystem {
     // ------------------------------------------------------------------ persistence
 
     private void load() {
-        if (Files.exists(dataFile)) {
-            try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(dataFile))) {
-                store = (Store) in.readObject();
-                if (store.orders == null) store.orders = new ArrayList<>();
-
+        if (files.exists()) {
+            try {
+                store = loadFromFiles();
                 // Add the new Iskaw products to older saved files as well
                 // This will keep the products available even if the user already has saved data
                 addIskawProductsIfMissing();
                 save();
                 return;
-            } catch (IOException | ClassNotFoundException | ClassCastException e) {
-                try { // keep the unreadable file so nothing is silently lost
-                    Files.move(dataFile, dataFile.resolveSibling(dataFile.getFileName() + ".corrupt"),
-                            StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException ignored) { }
-                startupWarning = "The saved data could not be read, so sample data was loaded instead.";
+            } catch (IOException e) {
+                try { files.setAsideDamagedFiles(); } catch (IOException ignored) { }
+                startupWarning = "The saved data could not be read (" + e.getMessage() + "). The damaged files were "
+                        + "moved to data/corrupt-*/ and sample data was loaded instead.";
             }
+        } else if (importLegacySave()) {
+            return;
         }
         store = new Store();
         seed();
         save();
     }
 
-    /** Writes all data to disk (via a temp file so a crash cannot leave a half-written save). */
+    /** Imports the old single-file binary save (data/dairyhub.dat) once, then switches to the text files. */
+    private boolean importLegacySave() {
+        Path legacy = files.folder().resolve("dairyhub.dat");
+        try {
+            if (!Files.exists(legacy) || Files.size(legacy) == 0) return false;
+            try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(legacy))) {
+                store = (Store) in.readObject();
+            }
+            if (store.orders == null) store.orders = new ArrayList<>();
+            addIskawProductsIfMissing();
+            save();
+            Files.move(legacy, legacy.resolveSibling("dairyhub.dat.imported"), StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        } catch (IOException | ClassNotFoundException | ClassCastException e) {
+            store = null;
+            return false; // unreadable old file: leave it alone and start fresh
+        }
+    }
+
+    /** Loads every data file with the reader classes of the storage package. */
+    private Store loadFromFiles() throws IOException {
+        Store s = new Store();
+        s.users.addAll(UserFileReader.read(files.users()));
+        s.products.addAll(ProductFileReader.read(files.products(), s.inventory));
+        var lines = SaleLineFileReader.read(files.lines());
+        s.transactions.addAll(TransactionFileReader.read(files.transactions(), lines));
+        s.orders.addAll(OrderFileReader.read(files.orders(), lines));
+        // new ids continue after the highest saved one (e.g. T-00017 -> 18)
+        s.transactionCounter = highest(s.transactions.stream().map(Transaction::getId).collect(Collectors.toList()));
+        s.orderCounter = highest(s.orders.stream().map(Order::getId).collect(Collectors.toList()));
+        return s;
+    }
+
+    private static int highest(List<String> ids) {
+        int max = ids.size();
+        for (String id : ids) {
+            try {
+                max = Math.max(max, Integer.parseInt(id.substring(id.indexOf('-') + 1)));
+            } catch (RuntimeException ignored) { }
+        }
+        return max;
+    }
+
+    /** Writes all data to disk with the writer classes of the storage package. Called after every change. */
     public synchronized void save() {
         try {
-            Path parent = dataFile.toAbsolutePath().getParent();
-            if (parent != null) Files.createDirectories(parent);
-            Path tmp = dataFile.resolveSibling(dataFile.getFileName() + ".tmp");
-            try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(tmp))) {
-                out.writeObject(store);
-            }
-            Files.move(tmp, dataFile, StandardCopyOption.REPLACE_EXISTING);
+            UserFileWriter.write(files.users(), store.users);
+            ProductFileWriter.write(files.products(), store.products, store.inventory);
+            TransactionFileWriter.write(files.transactions(), store.transactions);
+            OrderFileWriter.write(files.orders(), store.orders);
+            SaleLineFileWriter.write(files.lines(), store.transactions, store.orders);
+            java.nio.file.Files.createDirectories(files.images());
         } catch (IOException e) {
             throw new IllegalStateException("Could not save data: " + e.getMessage(), e);
         }
@@ -280,7 +334,56 @@ public class ProductSystem {
         requireManager(actor, "delete products");
         store.products.remove(p);
         store.inventory.remove(p.getId());
+        deleteImageFile(p.getImageFile());
         save();
+    }
+
+    // ------------------------------------------------------------------ product photos
+
+    private static final long MAX_IMAGE_BYTES = 8L * 1024 * 1024;
+    private static final List<String> IMAGE_TYPES = java.util.Arrays.asList("png", "jpg", "jpeg", "gif", "bmp");
+
+    /** Copies a picture chosen by the manager into the data/images folder and attaches it to the product. */
+    public synchronized void setProductImage(User actor, Product p, Path source) {
+        requireManager(actor, "change product photos");
+        if (source == null || !Files.isRegularFile(source)) throw new IllegalArgumentException("That picture file could not be found.");
+        String name = source.getFileName().toString().toLowerCase();
+        String ext = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : "";
+        if (!IMAGE_TYPES.contains(ext))
+            throw new IllegalArgumentException("Please choose a PNG, JPG, GIF or BMP picture.");
+        try {
+            if (Files.size(source) > MAX_IMAGE_BYTES)
+                throw new IllegalArgumentException("That picture is larger than 8 MB. Please choose a smaller one.");
+            Files.createDirectories(files.images());
+            String stored = p.getId() + "-" + System.currentTimeMillis() + "." + ext;
+            Files.copy(source, files.images().resolve(stored), StandardCopyOption.REPLACE_EXISTING);
+            String old = p.getImageFile();
+            p.setImageFile(stored);
+            deleteImageFile(old);
+            save();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not save the picture: " + e.getMessage(), e);
+        }
+    }
+
+    public synchronized void removeProductImage(User actor, Product p) {
+        requireManager(actor, "change product photos");
+        String old = p.getImageFile();
+        p.setImageFile(null);
+        deleteImageFile(old);
+        save();
+    }
+
+    /** The picture file of a product, or null when it has none (or the file went missing). */
+    public Path getImagePath(Product p) {
+        if (p == null || !p.hasImage()) return null;
+        Path f = files.images().resolve(p.getImageFile());
+        return Files.isRegularFile(f) ? f : null;
+    }
+
+    private void deleteImageFile(String file) {
+        if (file == null || file.isEmpty()) return;
+        try { Files.deleteIfExists(files.images().resolve(file)); } catch (IOException ignored) { }
     }
 
     private void ensureUnique(String name, String unit, Product ignore) {

@@ -13,6 +13,11 @@ public class Inventory implements Serializable {
 
     private final Map<String, Integer> stock = new HashMap<>();
 
+    /** Copy of all stock levels (used by the save file). */
+    public Map<String, Integer> snapshot() {
+        return new HashMap<>(stock);
+    }
+
     public int getStock(String productId) {
         return stock.getOrDefault(productId, 0);
     }

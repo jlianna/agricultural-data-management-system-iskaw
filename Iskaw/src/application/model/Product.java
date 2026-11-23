@@ -12,6 +12,8 @@ public class Product implements Serializable {
     private String category;
     private String unit;
     private double price;
+    /** File name of the product photo inside data/images, or null when it has no photo. */
+    private String imageFile;
 
     public Product(String id, String name, String description, String category, String unit, double price) {
         this.id = id;
@@ -28,6 +30,10 @@ public class Product implements Serializable {
     public String getCategory() { return category; }
     public String getUnit() { return unit; }
     public double getPrice() { return price; }
+    public String getImageFile() { return imageFile; }
+    public boolean hasImage() { return imageFile != null && !imageFile.isEmpty(); }
+
+    public void setImageFile(String imageFile) { this.imageFile = (imageFile == null || imageFile.isEmpty()) ? null : imageFile; }
 
     public void setName(String name) {
         if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Product name is required.");

@@ -19,6 +19,20 @@ public class ItemDonation extends Transaction {
         this.donor = (donor == null || donor.trim().isEmpty()) ? "Anonymous" : donor.trim();
     }
 
+    /** Used when loading saved data (the product may have been deleted since). */
+    public ItemDonation(String id, String recordedBy, String donor, String productId, String productName, int quantity) {
+        super(id, recordedBy);
+        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero.");
+        this.productId = productId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.donor = (donor == null || donor.trim().isEmpty()) ? "Anonymous" : donor.trim();
+    }
+
+    public String getProductId() { return productId; }
+    public String getProductName() { return productName; }
+    public int getQuantity() { return quantity; }
+
     @Override public String getTypeLabel() { return "Item Donation"; }
     @Override public String getParty() { return donor; }
     @Override public String getDetails() { return quantity + "x " + productName; }

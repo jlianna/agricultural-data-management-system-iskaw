@@ -27,13 +27,13 @@ public class Order implements Serializable {
     private final String customerUsername;
     private final String customerName;
     private final List<SaleLine> lines;
-    private final LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime timestamp = LocalDateTime.now();
     private Status status = Status.PENDING;
     private String handledBy;
     private LocalDateTime handledAt;
     private String saleId;
 
-    Order(String id, String customerUsername, String customerName, List<SaleLine> lines) {
+    public Order(String id, String customerUsername, String customerName, List<SaleLine> lines) {
         this.id = id;
         this.customerUsername = customerUsername;
         this.customerName = customerName;
@@ -56,6 +56,15 @@ public class Order implements Serializable {
 
     public String getDetails() {
         return lines.stream().map(l -> l.getQuantity() + "x " + l.getProductName()).collect(Collectors.joining(", "));
+    }
+
+    /** Used when loading saved data. */
+    public void restoreState(LocalDateTime timestamp, Status status, String handledBy, LocalDateTime handledAt, String saleId) {
+        if (timestamp != null) this.timestamp = timestamp;
+        if (status != null) this.status = status;
+        this.handledBy = handledBy;
+        this.handledAt = handledAt;
+        this.saleId = saleId;
     }
 
     void complete(String by, String saleId) {

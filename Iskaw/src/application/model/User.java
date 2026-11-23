@@ -23,7 +23,19 @@ public abstract class User implements Serializable {
         this.passwordHash = hash(password);
     }
 
+    /** Rebuilds a user from saved data; {@code passwordHash} is the stored SHA-256 hash, not a password. */
+    protected User(String username, String fullName, String passwordHash, boolean alreadyHashed) {
+        if (username == null || username.trim().isEmpty()) throw new IllegalArgumentException("Username is required.");
+        if (fullName == null || fullName.trim().isEmpty()) throw new IllegalArgumentException("Full name is required.");
+        if (passwordHash == null || passwordHash.isEmpty()) throw new IllegalArgumentException("Password hash is missing.");
+        this.username = username.trim().toLowerCase();
+        this.fullName = fullName.trim();
+        this.passwordHash = passwordHash;
+    }
+
     public String getUsername() { return username; }
+    /** The stored SHA-256 hash (used by the storage package; never the password itself). */
+    public String getPasswordHash() { return passwordHash; }
     public String getFullName() { return fullName; }
 
     public boolean checkPassword(String password) {

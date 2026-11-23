@@ -3,15 +3,21 @@ package application.ui;
 import application.model.ProductSystem;
 import application.model.Product;
 import application.model.User;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
+import java.io.File;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -30,6 +36,11 @@ public class ProductsView extends View {
     private final Label formTitle = Ui.sectionTitle("Add a product");
     private final Button save;
     private final Button delete;
+    private final VBox photoHolder = new VBox();
+    private final Button removePhotoButton;
+    private File pendingPhoto;          // picture chosen but not saved yet
+    private boolean removePhoto;        // "Remove photo" pressed but not saved yet
+    private File lastFolder;
 
     public ProductsView(ProductSystem system, User user) {
         this.system = system;
@@ -37,6 +48,22 @@ public class ProductsView extends View {
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("No products yet. Add your first one on the right."));
+        table.setFixedCellSize(46);
+        TableColumn<Product, Product> photoCol = new TableColumn<>("Photo");
+        photoCol.setMinWidth(60);
+        photoCol.setMaxWidth(60);
+        photoCol.setSortable(false);
+        photoCol.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue()));
+        photoCol.setCellFactory(col -> new TableCell<Product, Product>() {
+            @Override
+            protected void updateItem(Product item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(null);
+                setGraphic(empty || item == null ? null : ProductImages.square(system, item, 36));
+                setAlignment(Pos.CENTER);
+            }
+        });
+        table.getColumns().add(photoCol);
         table.getColumns().add(Ui.column("Product", 190, Product::getName));
         table.getColumns().add(Ui.column("Category", 110, Product::getCategory));
         table.getColumns().add(Ui.column("Size", 70, Product::getUnit));
@@ -63,7 +90,18 @@ public class ProductsView extends View {
         save.setMaxWidth(Double.MAX_VALUE);
         HBox row2 = new HBox(8, delete, clear);
 
+        Button choosePhoto = Ui.button("Choose photo…", "btn-secondary", this::choosePhoto);
+        removePhotoButton = Ui.button("Remove", "btn-secondary", this::clearPhoto);
+        VBox photoButtons = new VBox(8, choosePhoto, removePhotoButton,
+                Ui.subtle("PNG, JPG, GIF or BMP, up to 8 MB."));
+        photoHolder.getStyleClass().add("photo-frame");
+        photoHolder.setMinSize(110, 110);
+        photoHolder.setMaxSize(110, 110);
+        HBox photoRow = new HBox(12, photoHolder, photoButtons);
+        photoRow.setAlignment(Pos.CENTER_LEFT);
+
         VBox form = new VBox(8, formTitle,
+                Ui.fieldLabel("PHOTO"), photoRow,
                 Ui.fieldLabel("NAME"), name,
                 Ui.fieldLabel("DESCRIPTION"), description,
                 Ui.fieldLabel("CATEGORY"), category,
@@ -72,10 +110,17 @@ public class ProductsView extends View {
                 Ui.fieldLabel("OPENING STOCK (NEW PRODUCTS ONLY)"), initialStock,
                 add, save, row2);
         form.getStyleClass().add("card");
-        form.setPrefWidth(320);
-        form.setMinWidth(320);
+        form.setPrefWidth(300);
 
-        HBox body = new HBox(16, table, form);
+        // the form can be taller than the window, so it scrolls instead of being cut off
+        ScrollPane formScroll = new ScrollPane(form);
+        formScroll.setFitToWidth(true);
+        formScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        formScroll.getStyleClass().add("plain-scroll");
+        formScroll.setPrefWidth(335);
+        formScroll.setMinWidth(335);
+
+        HBox body = new HBox(16, table, formScroll);
         HBox.setHgrow(table, Priority.ALWAYS);
         VBox.setVgrow(body, Priority.ALWAYS);
         HBox titleRow = new HBox(14, Ui.heading("Products"),
@@ -91,6 +136,9 @@ public class ProductsView extends View {
         save.setDisable(!editing);
         delete.setDisable(!editing);
         initialStock.setDisable(editing);
+        pendingPhoto = null;
+        removePhoto = false;
+        showPhoto(p);
         if (editing) {
             name.setText(p.getName());
             description.setText(p.getDescription());
@@ -109,6 +157,39 @@ public class ProductsView extends View {
         }
     }
 
+    // ------------------------------------------------------------ photo
+
+    private void showPhoto(Product p) {
+        photoHolder.getChildren().clear();
+        if (pendingPhoto != null) {
+            photoHolder.getChildren().add(ProductImages.squareFromFile(pendingPhoto, 110));
+        } else if (removePhoto) {
+            photoHolder.getChildren().add(ProductImages.square(system, null, 110));
+        } else {
+            photoHolder.getChildren().add(ProductImages.square(system, p, 110));
+        }
+        removePhotoButton.setDisable(pendingPhoto == null && (removePhoto || p == null || !p.hasImage()));
+    }
+
+    private void choosePhoto() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Choose a product photo");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pictures", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"));
+        if (lastFolder != null && lastFolder.isDirectory()) fc.setInitialDirectory(lastFolder);
+        File f = fc.showOpenDialog(getScene() == null ? null : getScene().getWindow());
+        if (f == null) return;
+        lastFolder = f.getParentFile();
+        pendingPhoto = f;
+        removePhoto = false;
+        showPhoto(table.getSelectionModel().getSelectedItem());
+    }
+
+    private void clearPhoto() {
+        pendingPhoto = null;
+        removePhoto = true;
+        showPhoto(table.getSelectionModel().getSelectedItem());
+    }
+
     private String categoryText() {
         // an editable ComboBox keeps typed text in its editor until committed
         String typed = category.getEditor().getText();
@@ -118,11 +199,21 @@ public class ProductsView extends View {
     private void addProduct() {
         Ui.attempt(() -> {
             int stock = initialStock.getText().trim().isEmpty() ? 0 : Ui.parseWhole(initialStock.getText(), "Opening stock");
-            system.addProduct(user, name.getText(), description.getText(), categoryText(), unit.getText(),
-                    Ui.parseMoney(price.getText(), "Price"), stock);
+            Product added = system.addProduct(user, name.getText(), description.getText(), categoryText(),
+                    unit.getText(), Ui.parseMoney(price.getText(), "Price"), stock);
+            String photoProblem = null;
+            if (pendingPhoto != null) {
+                try {
+                    system.setProductImage(user, added, pendingPhoto.toPath());
+                } catch (RuntimeException ex) {
+                    photoProblem = ex.getMessage();
+                }
+            }
             table.getSelectionModel().clearSelection();
             refresh();
             fill(null);
+            if (photoProblem != null)
+                Ui.error("The product was added, but its photo could not be saved: " + photoProblem);
         });
     }
 
@@ -132,6 +223,9 @@ public class ProductsView extends View {
         Ui.attempt(() -> {
             system.updateProduct(user, p, name.getText(), description.getText(), categoryText(), unit.getText(),
                     Ui.parseMoney(price.getText(), "Price"));
+            if (pendingPhoto != null) system.setProductImage(user, p, pendingPhoto.toPath());
+            else if (removePhoto) system.removeProductImage(user, p);
+            ProductImages.forget();
             refresh();
             table.getSelectionModel().select(p);
         });

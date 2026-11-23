@@ -8,6 +8,11 @@ public class Clerk extends User {
         super(username, fullName, password);
     }
 
+    /** Used when loading saved data. */
+    public Clerk(String username, String fullName, String passwordHash, boolean alreadyHashed) {
+        super(username, fullName, passwordHash, alreadyHashed);
+    }
+
     @Override public String getRole() { return "Clerk"; }
     @Override public boolean isManager() { return false; }
 }
