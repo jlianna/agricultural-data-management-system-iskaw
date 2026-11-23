@@ -18,5 +18,12 @@ COPY . .
 RUN mvn clean jpro:release-dir -DskipTests
 RUN chmod +x target/iskaw-dairyhub-jpro/bin/start.sh
 
+RUN mkdir -p /app/data /app/Iskaw /app/iskaw /app/target/iskaw-dairyhub-jpro/Iskaw /app/target/iskaw-dairyhub-jpro/iskaw && \
+    ln -sfn /app/data /app/Iskaw/data && \
+    ln -sfn /app/data /app/iskaw/data && \
+    ln -sfn /app/data /app/target/iskaw-dairyhub-jpro/data && \
+    ln -sfn /app/data /app/target/iskaw-dairyhub-jpro/Iskaw/data && \
+    ln -sfn /app/data /app/target/iskaw-dairyhub-jpro/iskaw/data
+
 EXPOSE 8080
 CMD ["sh", "-c", "xvfb-run -a ./target/iskaw-dairyhub-jpro/bin/start.sh -Dhttp.address=0.0.0.0 -Dhttp.port=${PORT:-8080} -Dplay.server.http.address=0.0.0.0 -Dplay.server.http.port=${PORT:-8080}"]
