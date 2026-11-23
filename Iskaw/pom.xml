@@ -70,6 +70,8 @@
                 <version>${jpro.version}</version>
                 <configuration>
                     <mainClassName>application.Main</mainClassName>
+                    <port>8080</port>
+                    <openBrowser>false</openBrowser>
                 </configuration>
             </plugin>
         </plugins>
