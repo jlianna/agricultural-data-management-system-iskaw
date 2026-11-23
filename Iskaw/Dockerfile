@@ -19,4 +19,4 @@ RUN mvn clean jpro:release-dir -DskipTests
 RUN chmod +x target/iskaw-dairyhub-jpro/bin/start.sh
 
 EXPOSE 8080
-CMD ["xvfb-run", "-a", "./target/iskaw-dairyhub-jpro/bin/start.sh"]
+CMD ["sh", "-c", "xvfb-run -a ./target/iskaw-dairyhub-jpro/bin/start.sh -Dhttp.address=0.0.0.0 -Dhttp.port=${PORT:-8080} -Dplay.server.http.address=0.0.0.0 -Dplay.server.http.port=${PORT:-8080}"]
