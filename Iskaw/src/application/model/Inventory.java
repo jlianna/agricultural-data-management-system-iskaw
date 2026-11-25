@@ -4,16 +4,16 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Tracks the on-hand quantity of every product. */
+//Tracks the on-hand quantity of every product.
 public class Inventory implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Stock at or below this level is flagged as "low". */
+    //Stock at or below this level is flagged as "low". 
     public static final int LOW_STOCK_THRESHOLD = 10;
 
     private final Map<String, Integer> stock = new HashMap<>();
 
-    /** Copy of all stock levels (used by the save file). */
+    //Copy of all stock levels (used by the save file).
     public Map<String, Integer> snapshot() {
         return new HashMap<>(stock);
     }
@@ -28,14 +28,18 @@ public class Inventory implements Serializable {
     }
 
     public void restock(String productId, int quantity) {
-        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero.");
+        if (quantity <= 0) 
+        	throw new IllegalArgumentException("Quantity must be greater than zero.");
         stock.merge(productId, quantity, Integer::sum);
     }
 
     public void deduct(String productId, String productName, int quantity) throws InsufficientStockException {
-        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero.");
+        if (quantity <= 0) 
+        	throw new IllegalArgumentException("Quantity must be greater than zero.");
+        
         int available = getStock(productId);
-        if (available < quantity) throw new InsufficientStockException(productName, available);
+        if (available < quantity) 
+        	throw new InsufficientStockException(productName, available);
         stock.put(productId, available - quantity);
     }
 
@@ -52,8 +56,10 @@ public class Inventory implements Serializable {
     }
 
     public String statusOf(String productId) {
-        if (isOut(productId)) return "Out of stock";
-        if (isLow(productId)) return "Low stock";
+        if (isOut(productId)) 
+        	return "Out of stock";
+        if (isLow(productId)) 
+        	return "Low stock";
         return "In stock";
     }
 }

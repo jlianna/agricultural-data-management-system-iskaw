@@ -2,7 +2,7 @@ package application.model;
 
 import java.io.Serializable;
 
-/** A dairy product offered for sale (name, description, price, etc.). */
+//A dairy product offered for sale (name, description, price, etc.).
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -12,7 +12,8 @@ public class Product implements Serializable {
     private String category;
     private String unit;
     private double price;
-    /** File name of the product photo inside data/images, or null when it has no photo. */
+    
+    //File name of the product photo inside data/images, or null when it has no photo.
     private String imageFile;
 
     public Product(String id, String name, String description, String category, String unit, double price) {
@@ -24,19 +25,38 @@ public class Product implements Serializable {
         setPrice(price);
     }
 
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public String getCategory() { return category; }
-    public String getUnit() { return unit; }
-    public double getPrice() { return price; }
-    public String getImageFile() { return imageFile; }
-    public boolean hasImage() { return imageFile != null && !imageFile.isEmpty(); }
+    public String getId() { 
+    	return id; 
+    }
+    public String getName() { 
+    	return name; 
+    }
+    public String getDescription() { 
+    	return description; 
+    }
+    public String getCategory() { 
+    	return category; 
+    }
+    public String getUnit() { 
+    	return unit; 
+    }
+    public double getPrice() { 
+    	return price; 
+    }
+    public String getImageFile() { 
+    	return imageFile; 
+    }
+    public boolean hasImage() { 
+    	return imageFile != null && !imageFile.isEmpty(); 
+    }
 
-    public void setImageFile(String imageFile) { this.imageFile = (imageFile == null || imageFile.isEmpty()) ? null : imageFile; }
+    public void setImageFile(String imageFile) { 
+    	this.imageFile = (imageFile == null || imageFile.isEmpty()) ? null : imageFile; 
+    }
 
     public void setName(String name) {
-        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Product name is required.");
+        if (name == null || name.trim().isEmpty()) 
+        	throw new IllegalArgumentException("Product name is required.");
         this.name = name.trim();
     }
 
@@ -45,12 +65,14 @@ public class Product implements Serializable {
     }
 
     public void setCategory(String category) {
-        if (category == null || category.trim().isEmpty()) throw new IllegalArgumentException("Category is required.");
+        if (category == null || category.trim().isEmpty()) 
+        	throw new IllegalArgumentException("Category is required.");
         this.category = category.trim();
     }
 
     public void setUnit(String unit) {
-        if (unit == null || unit.trim().isEmpty()) throw new IllegalArgumentException("Unit / size is required.");
+        if (unit == null || unit.trim().isEmpty()) 
+        	throw new IllegalArgumentException("Unit / size is required.");
         this.unit = unit.trim();
     }
 

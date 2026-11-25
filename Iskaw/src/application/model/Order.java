@@ -40,28 +40,54 @@ public class Order implements Serializable {
         this.lines = new ArrayList<>(lines);
     }
 
-    public String getId() { return id; }
-    public String getCustomerUsername() { return customerUsername; }
-    public String getCustomerName() { return customerName; }
-    public List<SaleLine> getLines() { return Collections.unmodifiableList(lines); }
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public Status getStatus() { return status; }
-    public String getHandledBy() { return handledBy; }
-    public LocalDateTime getHandledAt() { return handledAt; }
-    /** Id of the sale created when the order was fulfilled, or null. */
-    public String getSaleId() { return saleId; }
+    public String getId() { 
+    	return id; 
+    }
+    public String getCustomerUsername() { 
+    	return customerUsername; 
+    }
+    public String getCustomerName() { 
+    	return customerName; 
+    }
+    public List<SaleLine> getLines() { 
+    	return Collections.unmodifiableList(lines); 
+    }
+    public LocalDateTime getTimestamp() { 
+    	return timestamp; 
+    }
+    public Status getStatus() { 
+    	return status; 
+    }
+    public String getHandledBy() { 
+    	return handledBy; 
+    }
+    
+    public LocalDateTime getHandledAt() { 
+    	return handledAt; 
+    }
+    //Id of the sale created when the order was fulfilled, or null.
+    public String getSaleId() { 
+    	return saleId; 
+    }
 
-    public double getTotal() { return lines.stream().mapToDouble(SaleLine::getSubtotal).sum(); }
-    public int getItemCount() { return lines.stream().mapToInt(SaleLine::getQuantity).sum(); }
+    public double getTotal() { 
+    	return lines.stream().mapToDouble(SaleLine::getSubtotal).sum(); 
+    }
+    public int getItemCount() { 
+    	return lines.stream().mapToInt(SaleLine::getQuantity).sum(); 
+    }
 
     public String getDetails() {
         return lines.stream().map(l -> l.getQuantity() + "x " + l.getProductName()).collect(Collectors.joining(", "));
     }
 
-    /** Used when loading saved data. */
+    //Used when loading saved data.
     public void restoreState(LocalDateTime timestamp, Status status, String handledBy, LocalDateTime handledAt, String saleId) {
-        if (timestamp != null) this.timestamp = timestamp;
-        if (status != null) this.status = status;
+        if (timestamp != null) 
+        	this.timestamp = timestamp;
+        if (status != null) 
+        	this.status = status;
+        
         this.handledBy = handledBy;
         this.handledAt = handledAt;
         this.saleId = saleId;

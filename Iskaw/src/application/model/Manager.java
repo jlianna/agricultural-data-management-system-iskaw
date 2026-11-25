@@ -1,6 +1,6 @@
 package application.model;
 
-/** Full read/write access: products, inventory, transactions, clerk monitoring. */
+//Full read/write access: products, inventory, transactions, clerk monitoring.
 public class Manager extends User {
     private static final long serialVersionUID = 1L;
 
@@ -8,11 +8,18 @@ public class Manager extends User {
         super(username, fullName, password);
     }
 
-    /** Used when loading saved data. */
+    //Used when loading saved data.
     public Manager(String username, String fullName, String passwordHash, boolean alreadyHashed) {
         super(username, fullName, passwordHash, alreadyHashed);
     }
 
-    @Override public String getRole() { return "Manager"; }
-    @Override public boolean isManager() { return true; }
+    @Override 
+    public String getRole() { 
+    	return "Manager"; 
+    }
+    
+    @Override 
+    public boolean isManager() { 
+    	return true; 
+    }
 }

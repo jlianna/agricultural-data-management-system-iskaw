@@ -63,7 +63,9 @@ public class ProductSystem {
         load();
     }
 
-    public String getStartupWarning() { return startupWarning; }
+    public String getStartupWarning() { 
+    	return startupWarning; 
+    }
 
     // ------------------------------------------------------------------ persistence
 
@@ -73,7 +75,7 @@ public class ProductSystem {
                 store = loadFromFiles();
                 // Add the new Iskaw products to older saved files as well
                 // This will keep the products available even if the user already has saved data
-                addIskawProductsBeefCowhide();
+                addIskawProductsBeefCowHide();
                 attachDefaultImages();
                 save();
                 return;
@@ -85,6 +87,7 @@ public class ProductSystem {
         } else if (importLegacySave()) {
             return;
         }
+        
         store = new Store();
         seed();
         attachDefaultImages();
@@ -100,7 +103,7 @@ public class ProductSystem {
                 store = (Store) in.readObject();
             }
             if (store.orders == null) store.orders = new ArrayList<>();
-            addIskawProductsIfMissing();
+            	addIskawProductsBeefCowHide();
             save();
             Files.move(legacy, legacy.resolveSibling("dairyhub.dat.imported"), StandardCopyOption.REPLACE_EXISTING);
             return true;
@@ -110,7 +113,7 @@ public class ProductSystem {
         }
     }
 
-    /** Loads every data file with the reader classes of the storage package. */
+    //Loads every data file with the reader classes of the storage package.
     private Store loadFromFiles() throws IOException {
         Store s = new Store();
         s.users.addAll(UserFileReader.read(files.users()));
@@ -134,7 +137,7 @@ public class ProductSystem {
         return max;
     }
 
-    /** Writes all data to disk with the writer classes of the storage package. Called after every change. */
+    // Writes all data to disk with the writer classes of the storage package. Called after every change.
     public synchronized void save() {
         try {
             UserFileWriter.write(files.users(), store.users);
@@ -168,12 +171,12 @@ public class ProductSystem {
         addSeed("Pastillas de Leche", "Traditional milk candy, pack of 10 pieces.", "Sweets", "10 pcs", 60, 45);
 
         // Add the beef and cowhide products for the Iskaw shop
-        addIskawProductsIfMissing();
+        addIskawProductsBeefCowHide();
     }
 
     // Add the new products only if they are not yet in the inventory
     // This will avoid adding the same products every time the program starts
-    private void addIskawProductsIfMissing() {
+    private void addIskawProductsBeefCowHide() {
         addIskawProduct("Chuck", "Beef cut, priced per kilogram.", "Beef", "1 kg", 420, 20);
         addIskawProduct("Brisket with Bones", "Beef cut, priced per kilogram.", "Beef", "1 kg", 380, 20);
         addIskawProduct("Brisket, Boneless", "Boneless beef brisket, priced per kilogram.", "Beef", "1 kg", 480, 20);
