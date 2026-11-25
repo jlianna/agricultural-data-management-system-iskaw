@@ -3,10 +3,9 @@ package application.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Base class for every recorded transaction (sale, cash donation, item donation).
- * Subclasses define how they affect inventory and the cash wallet (polymorphism).
- */
+
+//Base class for every recorded transaction (sale, cash donation, item donation).
+//Subclasses define how they affect inventory and the cash wallet (polymorphism).
 public abstract class Transaction implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -17,13 +16,14 @@ public abstract class Transaction implements Serializable {
     private String voidedBy;
     private LocalDateTime voidedAt;
 
+    //Constructor for the Transaction
     protected Transaction(String id, String recordedBy) {
         this.id = id;
         this.recordedBy = recordedBy;
         this.timestamp = LocalDateTime.now();
     }
 
-    /** Used when loading saved data: puts back the original time and void state. */
+    //Used when loading saved data: puts back the original time and void state.
     public final void restoreState(LocalDateTime timestamp, boolean voided, String voidedBy, LocalDateTime voidedAt) {
         if (timestamp != null) this.timestamp = timestamp;
         this.voided = voided;
@@ -39,25 +39,25 @@ public abstract class Transaction implements Serializable {
     public LocalDateTime getVoidedAt() { return voidedAt; }
     public String getStatus() { return voided ? "Voided" : "Completed"; }
 
-    /** Label such as "Sale" or "Cash Donation". */
+    //Label such as "Sale" or "Cash Donation".
     public abstract String getTypeLabel();
 
-    /** Customer or donor name. */
+    //Customer or donor name.
     public abstract String getParty();
 
-    /** Short description of what was sold / donated. */
+    //Short description of what was sold / donated.
     public abstract String getDetails();
 
-    /** Cash that entered the wallet because of this transaction (ignores void state). */
+    //Cash that entered the wallet because of this transaction ignores void state
     public abstract double getCashAmount();
 
-    /** True for donations of items (no cash involved). */
+    //True for donations of items -no cash involved
     public boolean isInKind() { return false; }
 
-    /** Applies the transaction's effect to inventory. */
+    //Applies the transaction's effect to inventory.
     public abstract void applyTo(Inventory inventory) throws InsufficientStockException;
 
-    /** Undoes the transaction's effect on inventory. */
+    //Undoes the transaction's effect on inventory.
     protected abstract void reverseFrom(Inventory inventory) throws InsufficientStockException;
 
     public final void voidBy(String username, Inventory inventory) throws InsufficientStockException {

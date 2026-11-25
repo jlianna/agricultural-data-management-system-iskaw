@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * An order placed by a customer. Placing an order does not touch stock or the wallet:
- * when the customer picks it up and pays cash, a clerk fulfils it, which records a normal
- * {@link SaleTransaction} linked to the customer.
- */
+
+// An order placed by a customer. Placing an order does not touch stock or the wallet:
+// when the customer picks it up and pays cash, a clerk fulfils it, which records a normal
+// linked to the customer.
+
 public class Order implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -22,7 +22,7 @@ public class Order implements Serializable {
         Status(String label) { this.label = label; }
         public String getLabel() { return label; }
     }
-
+    // Basic order info, items ordered, and current order status
     private final String id;
     private final String customerUsername;
     private final String customerName;
@@ -33,6 +33,7 @@ public class Order implements Serializable {
     private LocalDateTime handledAt;
     private String saleId;
 
+    //Constructor for Order
     public Order(String id, String customerUsername, String customerName, List<SaleLine> lines) {
         this.id = id;
         this.customerUsername = customerUsername;
@@ -40,6 +41,7 @@ public class Order implements Serializable {
         this.lines = new ArrayList<>(lines);
     }
 
+  //getters
     public String getId() { 
     	return id; 
     }
@@ -87,19 +89,19 @@ public class Order implements Serializable {
         	this.timestamp = timestamp;
         if (status != null) 
         	this.status = status;
-        
+        // Save handler info, time handled, and linked sale ID
         this.handledBy = handledBy;
         this.handledAt = handledAt;
         this.saleId = saleId;
     }
-
+    // mark the order as completed and save who finished it and the sale id
     void complete(String by, String saleId) {
         status = Status.COMPLETED;
         handledBy = by;
         handledAt = LocalDateTime.now();
         this.saleId = saleId;
     }
-
+    // mark order as cancelled and record who cancelled it and when
     void cancel(String by) {
         status = Status.CANCELLED;
         handledBy = by;

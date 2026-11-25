@@ -35,6 +35,7 @@ public class ItemDonation extends Transaction {
         this.donor = (donor == null || donor.trim().isEmpty()) ? "Anonymous" : donor.trim();
     }
 
+    //getters
     public String getProductId() { 
     	return productId; 
     }
@@ -61,16 +62,20 @@ public class ItemDonation extends Transaction {
     public double getCashAmount() { 
     	return 0; 
     }
+
+    
     @Override 
     public boolean isInKind() { 
     	return true; 
     }
 
+    //add the donated quantity into inventory
     @Override
     public void applyTo(Inventory inventory) {
         inventory.restock(productId, quantity);
     }
 
+  //remove the donated quantity from the inventory if this donation is reversed
     @Override
     protected void reverseFrom(Inventory inventory) throws InsufficientStockException {
         inventory.deduct(productId, productName, quantity);

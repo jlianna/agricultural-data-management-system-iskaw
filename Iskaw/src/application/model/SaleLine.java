@@ -2,7 +2,7 @@ package application.model;
 
 import java.io.Serializable;
 
-/** One line of a sale: a product, a quantity and the price at the time of sale. */
+//One line of a sale: a product, a quantity and the price at the time of sale.
 public class SaleLine implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -11,6 +11,7 @@ public class SaleLine implements Serializable {
     private final int quantity;
     private final double unitPrice;
 
+    //Constructor for Saleline
     public SaleLine(Product product, int quantity) {
         if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero.");
         this.productId = product.getId();
@@ -19,7 +20,7 @@ public class SaleLine implements Serializable {
         this.quantity = quantity;
     }
 
-    /** Used when loading saved data (keeps the price the customer actually paid). */
+    //Used when loading saved data (keeps the price the customer actually paid).
     public SaleLine(String productId, String productName, int quantity, double unitPrice) {
         if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero.");
         this.productId = productId;
@@ -27,7 +28,8 @@ public class SaleLine implements Serializable {
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
-
+    
+    //getters
     public String getProductId() { return productId; }
     public String getProductName() { return productName; }
     public int getQuantity() { return quantity; }

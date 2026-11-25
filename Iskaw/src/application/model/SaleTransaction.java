@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** A customer purchase paid in cash. */
+//A customer purchase paid in cash.
 public class SaleTransaction extends Transaction {
     private static final long serialVersionUID = 1L;
 
     private final String customer;
-    /** Username of the registered customer this sale belongs to, or null for walk-ins. */
+    //Username of the registered customer this sale belongs to, or null for walk-ins.
     private final String customerUsername;
     private final List<SaleLine> lines;
     private final double total;
@@ -33,7 +33,7 @@ public class SaleTransaction extends Transaction {
         this.customer = (customer == null || customer.trim().isEmpty()) ? "Walk-in customer" : customer.trim();
     }
 
-    /** @return the customer's username, or null if this was a walk-in sale */
+    // @return the customer's username, or null if this was a walk-in sale
     public String getCustomerUsername() { return customerUsername; }
     public List<SaleLine> getLines() { return Collections.unmodifiableList(lines); }
     public double getTotal() { return total; }
@@ -51,16 +51,20 @@ public class SaleTransaction extends Transaction {
     }
 
     @Override
+    // to apply all sale lines to inventory, or fail before changing stock if any item is short
     public void applyTo(Inventory inventory) throws InsufficientStockException {
         for (SaleLine l : lines) { // check everything first so the sale is all-or-nothing
             int available = inventory.getStock(l.getProductId());
             if (available < l.getQuantity()) throw new InsufficientStockException(l.getProductName(), available);
         }
+     // Deduct the sold quantities once all items are confirmed in stock
         for (SaleLine l : lines) inventory.deduct(l.getProductId(), l.getProductName(), l.getQuantity());
     }
 
     @Override
+    // to put sold items back into inventory when a sale is voided or reversed
     protected void reverseFrom(Inventory inventory) {
+    	// loop through each item line and add its quantity back to stock
         for (SaleLine l : lines) inventory.restock(l.getProductId(), l.getQuantity());
     }
 }

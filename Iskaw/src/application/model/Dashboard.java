@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Read-only summary of activity. Built for one user (a clerk's own dashboard)
- * or for everyone (the manager's overview, when {@code owner} is null).
- */
+
+// Read-only summary of activity. Built for one user (a clerk's own dashboard)
+// or for everyone (the manager's overview, when {@code owner} is null).
+
 public class Dashboard {
 
-    /** One row of the manager's clerk-performance table. */
+    //One row of the manager's clerk-performance table.
     public static class ClerkSummary {
         private final Clerk clerk;
         private final int salesCount;
@@ -20,6 +20,7 @@ public class Dashboard {
         private final double donationsTotal;
         private final int voidedCount;
 
+        //save all summary numbers for this clerk
         ClerkSummary(Clerk clerk, int salesCount, double salesTotal, double donationsTotal, int voidedCount) {
             this.clerk = clerk;
             this.salesCount = salesCount;
@@ -28,35 +29,50 @@ public class Dashboard {
             this.voidedCount = voidedCount;
         }
 
-        public Clerk getClerk() { return clerk; }
-        public int getSalesCount() { return salesCount; }
-        public double getSalesTotal() { return salesTotal; }
-        public double getDonationsTotal() { return donationsTotal; }
-        public int getVoidedCount() { return voidedCount; }
+        //getter for each summary field
+        public Clerk getClerk() { 
+          return clerk; 
+          }
+        public int getSalesCount() { 
+          return salesCount; 
+          }
+        public double getSalesTotal() { 
+          return salesTotal; 
+          }
+        public double getDonationsTotal() { 
+          return donationsTotal; 
+          }
+        public int getVoidedCount() { 
+          return voidedCount; 
+          }
     }
 
     private final ProductSystem system;
     private final User owner;
     private final List<Transaction> scope; // the transactions this dashboard covers
 
+    // Build a dashboard for one user, or for everyone if owner is null
     public Dashboard(ProductSystem system, User owner) {
         this(system, owner, owner == null ? system.getTransactions() : system.getTransactionsBy(owner.getUsername()));
     }
 
+    // Build a dashboard showing only a customer's own purchases
     private Dashboard(ProductSystem system, User owner, List<Transaction> scope) {
         this.system = system;
         this.owner = owner;
         this.scope = scope;
     }
 
-    /** Dashboard of a customer's own purchases (sales linked to their account). */
+    //Dashboard of a customer's own purchases (sales linked to their account).
     public static Dashboard forCustomer(ProductSystem system, Customer customer) {
         return new Dashboard(system, customer, new ArrayList<Transaction>(system.getPurchasesOf(customer.getUsername())));
     }
 
-    private Active active() { return new Active(); }
+    // Helper object for filtering non-voided transactions
+    private Active active() { 
+      return new Active(); }
 
-    /** Tiny helper so the totals below read clearly. */
+    // Filters active non-voided sales, cash donations, and item donations
     private class Active {
         List<Transaction> sales() {
             return scope.stream().filter(t -> t instanceof SaleTransaction && !t.isVoided()).collect(Collectors.toList());
@@ -69,6 +85,7 @@ public class Dashboard {
         }
     }
 
+    // Return who owns this dashboard
     public User getOwner() { return owner; }
 
     public double getSalesTotal() { return active().sales().stream().mapToDouble(Transaction::getCashAmount).sum(); }
@@ -81,18 +98,18 @@ public class Dashboard {
     public double getWalletBalance() { return system.getWalletBalance(); }
     public int getLowStockCount() { return system.getLowStockProducts().size(); }
 
-    /** Most recent transactions in scope, newest first. */
+    // Most recent transactions in scope, newest first.
     public List<Transaction> getRecent(int limit) {
         return scope.stream().limit(limit).collect(Collectors.toList());
     }
 
-    /** All sales in scope (including voided), newest first. */
+    //All sales in scope (including voided), newest first. 
     public List<SaleTransaction> getSalesHistory() {
         return scope.stream().filter(t -> t instanceof SaleTransaction)
                 .map(t -> (SaleTransaction) t).collect(Collectors.toList());
     }
 
-    /** Best-selling products by units sold (voided sales ignored). */
+    //Best-selling products by units sold (voided sales ignored).
     public Map<String, Integer> getTopProducts(int limit) {
         Map<String, Integer> totals = new LinkedHashMap<>();
         for (Transaction t : active().sales())
@@ -104,7 +121,7 @@ public class Dashboard {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
     }
 
-    /** Per-clerk figures for the manager's dashboard. */
+    //Per-clerk figures for the manager's dashboard.
     public List<ClerkSummary> getClerkSummaries() {
         return system.getClerks().stream().map(c -> {
             Dashboard d = new Dashboard(system, c);
