@@ -157,7 +157,7 @@ public class ProductSystem {
         store.users.add(new Clerk("clerk2", "Ana Reyes", "clerk123"));
         store.users.add(new Customer("customer1", "Rosa Mendoza", "customer123"));
 
-        addSeed("Fresh Carabao Milk", "Rich, creamy whole carabao milk, pasteurized and chilled.", "Milk", "1 L", 95, 40);
+      
         addSeed("Fresh Cow's Milk", "Farm-fresh whole cow's milk, pasteurized.", "Milk", "1 L", 85, 55);
         addSeed("Chocolate Milk", "Low-sugar chocolate drink made with fresh milk.", "Milk", "250 ml", 35, 70);
         addSeed("Kesong Puti", "Soft, lightly salted white cheese made from carabao milk.", "Cheese", "200 g", 120, 18);
