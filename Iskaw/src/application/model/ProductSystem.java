@@ -36,7 +36,7 @@ public class ProductSystem {
 
     // In-memory state container holding all application entities and ID counters.
     static class Store {
-        private static final long serialVersionUID = 1L;
+        // initialize
         final List<User> users = new ArrayList<>();
         final List<Product> products = new ArrayList<>();
         final Inventory inventory = new Inventory();
