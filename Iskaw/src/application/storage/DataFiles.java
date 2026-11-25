@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 //Where the data files live: the names of the files inside the data folder.
 public class DataFiles {
+	// data folder is set once object is created
     private final Path dir;
 
     public DataFiles(Path dir) { this.dir = dir; }
@@ -17,19 +18,23 @@ public class DataFiles {
     	return dir; 
     }
     
+    // dir.resolve builds the path so it works on windows, mac, and linux
     public Path users() { 
     	return dir.resolve("users.txt"); 
     }
     
+    // dir.resolve builds the path so it works on windows, mac, and linux
     public Path products() { 
     	return dir.resolve("products.txt"); 
     }
-    
+    // dir.resolve builds the path so it works on windows, mac, and linux
     public Path transactions() { 
     	return dir.resolve("transactions.txt"); 
     }
     
-    public Path orders() { return dir.resolve("orders.txt"); 
+    // dir.resolve builds the path so it works on windows, mac, and linux
+    public Path orders() { 
+    	return dir.resolve("orders.txt"); 
     }
     
     //The items of every sale and order.
@@ -37,6 +42,7 @@ public class DataFiles {
     	return dir.resolve("lines.txt"); 
     }
     
+    // product photos
     public Path images() { 
     	return dir.resolve("images"); 
     }
@@ -46,13 +52,15 @@ public class DataFiles {
         return Files.exists(users()) || Files.exists(products());
     }
 
-    //Moves damaged data files into data/corrupt-&lt;time&gt;/ so nothing is silently lost.
+    //Moves damaged data files into data/corrupt (time) ;/ so nothing is silently lost.
     public void setAsideDamagedFiles() throws IOException {
+    	// folder name carries the date and time
         Path box = dir.resolve("corrupt-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")));
         Files.createDirectories(box);
         
         for (Path file : new Path[] {users(), products(), transactions(), orders(), lines()}) {
-            for (String suffix : new String[] {"", ".bak"}) {
+            // handles the file and its .bak backup
+        	for (String suffix : new String[] {"", ".bak"}) {
                 Path f = file.resolveSibling(file.getFileName() + suffix);
                 if (Files.exists(f)) Files.move(f, box.resolve(f.getFileName()), StandardCopyOption.REPLACE_EXISTING);
             }

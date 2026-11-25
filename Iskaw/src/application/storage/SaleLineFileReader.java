@@ -13,12 +13,14 @@ import java.util.Map;
  * Line: owner id (e.g. T-00001 or O-00001)|product id|product name|quantity|price paid
  */
 public class SaleLineFileReader {
-    /** @return the items of each sale / order, keyed by the id of the sale / order they belong to */
+    // returns the items of each sale / order, keyed by the id of the sale / order they belong to
     public static Map<String, List<SaleLine>> read(Path path) throws IOException {
         return Records.load(path, records -> {
             // declare a hash map for storage
             Map<String, List<SaleLine>> byOwner = new LinkedHashMap<>();
-            for (String[] f : records) {
+            for (String[] f : records) { 
+            	// retrieve the existing item list for the owner id or create a new one if missing
+            	// then append the newly created Saleline to it
                 byOwner.computeIfAbsent(f[0], k -> new ArrayList<>())
                         .add(new SaleLine(f[1], f[2], Integer.parseInt(f[3]), Double.parseDouble(f[4])));
             }

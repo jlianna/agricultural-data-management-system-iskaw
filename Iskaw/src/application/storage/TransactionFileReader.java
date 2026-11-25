@@ -19,14 +19,15 @@ import java.util.Map;
  * ITEM_DONATION: donor|product id|product name|quantity
  */
 public class TransactionFileReader {
-    /** @param lines the items of each sale, from {@link SaleLineFileReader} */
+	// sale items already loaded from lines.txt and grouped by sale id
     public static List<Transaction> read(Path path, Map<String, List<SaleLine>> lines) throws IOException {
         return Records.load(path, records -> {
             List<Transaction> list = new ArrayList<>();
             for (String[] f : records) {
                 Transaction t;
-                switch (f[0]) {
+                switch (f[0]) { // f[0] is the type word
                     case "SALE":
+                    	// f[1] id, f[3] recorded by, f[7] customer, f[8] username, f[9] cash given
                         t = new SaleTransaction(f[1], f[3], f[7], f[8],
                                 lines.getOrDefault(f[1], new ArrayList<>()), Double.parseDouble(f[9]));
                         break;
@@ -39,13 +40,17 @@ public class TransactionFileReader {
                     default:
                         throw new IllegalArgumentException("unknown transaction type " + f[0]);
                 }
+                // the constructors stamp 'now' as the time and not 'voided'
+                // restoreState puts back the original time and the void details
                 t.restoreState(time(f[2]), Boolean.parseBoolean(f[4]), f[5], time(f[6]));
                 list.add(t);
             }
             return list;
         });
     }
-
+    
+    // date and time
+    // missing value (null) stays null
     private static LocalDateTime time(String s) {
         return s == null ? null : LocalDateTime.parse(s);
     }
