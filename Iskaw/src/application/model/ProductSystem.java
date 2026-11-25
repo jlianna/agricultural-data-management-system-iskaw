@@ -12,9 +12,8 @@ import application.storage.TransactionFileWriter;
 import application.storage.UserFileReader;
 import application.storage.UserFileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,9 +33,9 @@ import java.util.stream.Collectors;
  */
 public class ProductSystem {
 
-    /** Everything that is written to disk. */
-    /** In-memory data. Also the shape of the old binary save file (kept so old saves can still be imported). */
-    static class Store implements Serializable {
+    //Everything that is written to disk.
+    //In-memory data. Also the shape of the old binary save file (kept so old saves can still be imported).
+    static class Store{
         private static final long serialVersionUID = 1L;
         final List<User> users = new ArrayList<>();
         final List<Product> products = new ArrayList<>();
@@ -49,16 +48,18 @@ public class ProductSystem {
 
     private final DataFiles files;
     private Store store;
-    /** Set when damaged save files had to be set aside during start-up. */
+    
+    // Set when damaged save files had to be set aside during start-up. 
     private String startupWarning;
 
-    /** Uses the folder {@code data/} next to where the program is run. */
+    //Uses the folder {@code data/} next to where the program is run.
     public ProductSystem() {
         this(Paths.get("data"));
     }
 
-    /** @param dataDir folder that holds users.txt, products.txt, transactions.txt, orders.txt and images/ */
+    //@param dataDir folder that holds users.txt, products.txt, transactions.txt, orders.txt and images
     public ProductSystem(Path dataDir) {
+    	
         this.files = new DataFiles(dataDir);
         load();
     }
@@ -75,50 +76,33 @@ public class ProductSystem {
                 store = loadFromFiles();
                 // Add the new Iskaw products to older saved files as well
                 // This will keep the products available even if the user already has saved data
-                addIskawProductsBeefCowHide();
                 attachDefaultImages();
                 save();
                 return;
+                
             } catch (IOException e) {
-                try { files.setAsideDamagedFiles(); } catch (IOException ignored) { }
+                try { 
+                	files.setAsideDamagedFiles(); 
+                } catch (IOException ignored) { }
                 startupWarning = "The saved data could not be read (" + e.getMessage() + "). The damaged files were "
                         + "moved to data/corrupt-*/ and sample data was loaded instead.";
             }
-        } else if (importLegacySave()) {
-            return;
-        }
-        
+        } 
         store = new Store();
         seed();
         attachDefaultImages();
         save();
     }
 
-    /** Imports the old single-file binary save (data/dairyhub.dat) once, then switches to the text files. */
-    private boolean importLegacySave() {
-        Path legacy = files.folder().resolve("dairyhub.dat");
-        try {
-            if (!Files.exists(legacy) || Files.size(legacy) == 0) return false;
-            try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(legacy))) {
-                store = (Store) in.readObject();
-            }
-            if (store.orders == null) store.orders = new ArrayList<>();
-            	addIskawProductsBeefCowHide();
-            save();
-            Files.move(legacy, legacy.resolveSibling("dairyhub.dat.imported"), StandardCopyOption.REPLACE_EXISTING);
-            return true;
-        } catch (IOException | ClassNotFoundException | ClassCastException e) {
-            store = null;
-            return false; // unreadable old file: leave it alone and start fresh
-        }
-    }
-
+   
     //Loads every data file with the reader classes of the storage package.
     private Store loadFromFiles() throws IOException {
         Store s = new Store();
         s.users.addAll(UserFileReader.read(files.users()));
         s.products.addAll(ProductFileReader.read(files.products(), s.inventory));
+        
         var lines = SaleLineFileReader.read(files.lines());
+        
         s.transactions.addAll(TransactionFileReader.read(files.transactions(), lines));
         s.orders.addAll(OrderFileReader.read(files.orders(), lines));
         // new ids continue after the highest saved one (e.g. T-00017 -> 18)
@@ -157,7 +141,7 @@ public class ProductSystem {
         store.users.add(new Clerk("clerk2", "Ana Reyes", "clerk123"));
         store.users.add(new Customer("customer1", "Rosa Mendoza", "customer123"));
 
-      
+        //add dairy products
         addSeed("Fresh Cow's Milk", "Farm-fresh whole cow's milk, pasteurized.", "Milk", "1 L", 85, 55);
         addSeed("Chocolate Milk", "Low-sugar chocolate drink made with fresh milk.", "Milk", "250 ml", 35, 70);
         addSeed("Kesong Puti", "Soft, lightly salted white cheese made from carabao milk.", "Cheese", "200 g", 120, 18);
@@ -170,57 +154,47 @@ public class ProductSystem {
         addSeed("Ube Ice Cream", "Creamy purple-yam ice cream.", "Frozen", "1 L", 260, 12);
         addSeed("Pastillas de Leche", "Traditional milk candy, pack of 10 pieces.", "Sweets", "10 pcs", 60, 45);
 
-        // Add the beef and cowhide products for the Iskaw shop
-        addIskawProductsBeefCowHide();
-    }
+        // Add the beef 
+        addSeed("Chuck", "Beef cut, priced per kilogram.", "Beef", "1 kg", 420, 20);
+    	addSeed("Brisket with Bones", "Beef cut, priced per kilogram.", "Beef", "1 kg", 380, 20);
+    	addSeed("Brisket, Boneless", "Boneless beef brisket, priced per kilogram.", "Beef", "1 kg", 480, 20);
+    	addSeed("Beef Cubes", "Beef cubes, priced per kilogram.", "Beef", "1 kg", 450, 20);
+    	addSeed("Beef Shank", "Beef shank, priced per kilogram.", "Beef", "1 kg", 420, 20);
+    	addSeed("Beef Ribs", "Beef ribs, priced per kilogram.", "Beef", "1 kg", 400, 20);
+    	addSeed("Short Ribs", "Short ribs, priced per kilogram.", "Beef", "1 kg", 450, 20);
+    	addSeed("Sirloin", "Sirloin, priced per kilogram.", "Beef", "1 kg", 550, 20);
+    	addSeed("Tenderloin", "Tenderloin, priced per kilogram.", "Beef", "1 kg", 650, 20);
+    	addSeed("Ribeye", "Ribeye, priced per kilogram.", "Beef", "1 kg", 600, 20);
+    	addSeed("Ground Beef", "Ground beef, priced per kilogram.", "Beef", "1 kg", 420, 20);
+    	addSeed("Beef Round", "Beef round, priced per kilogram.", "Beef", "1 kg", 450, 20);
+    	addSeed("Flank Steak", "Flank steak, priced per kilogram.", "Beef", "1 kg", 480, 20);
+    	addSeed("Beef Plate", "Beef plate, priced per kilogram.", "Beef", "1 kg", 420, 20);
+    	addSeed("Beef Offal", "Edible beef offal, priced per kilogram.", "Beef", "1 kg", 280, 20);
 
-    // Add the new products only if they are not yet in the inventory
-    // This will avoid adding the same products every time the program starts
-    private void addIskawProductsBeefCowHide() {
-        addIskawProduct("Chuck", "Beef cut, priced per kilogram.", "Beef", "1 kg", 420, 20);
-        addIskawProduct("Brisket with Bones", "Beef cut, priced per kilogram.", "Beef", "1 kg", 380, 20);
-        addIskawProduct("Brisket, Boneless", "Boneless beef brisket, priced per kilogram.", "Beef", "1 kg", 480, 20);
-        addIskawProduct("Beef Cubes", "Beef cubes, priced per kilogram.", "Beef", "1 kg", 450, 20);
-        addIskawProduct("Beef Shank", "Beef shank, priced per kilogram.", "Beef", "1 kg", 420, 20);
-        addIskawProduct("Beef Ribs", "Beef ribs, priced per kilogram.", "Beef", "1 kg", 400, 20);
-        addIskawProduct("Short Ribs", "Short ribs, priced per kilogram.", "Beef", "1 kg", 450, 20);
-        addIskawProduct("Sirloin", "Sirloin, priced per kilogram.", "Beef", "1 kg", 550, 20);
-        addIskawProduct("Tenderloin", "Tenderloin, priced per kilogram.", "Beef", "1 kg", 650, 20);
-        addIskawProduct("Ribeye", "Ribeye, priced per kilogram.", "Beef", "1 kg", 600, 20);
-        addIskawProduct("Ground Beef", "Ground beef, priced per kilogram.", "Beef", "1 kg", 420, 20);
-        addIskawProduct("Beef Round", "Beef round, priced per kilogram.", "Beef", "1 kg", 450, 20);
-        addIskawProduct("Flank Steak", "Flank steak, priced per kilogram.", "Beef", "1 kg", 480, 20);
-        addIskawProduct("Beef Plate", "Beef plate, priced per kilogram.", "Beef", "1 kg", 420, 20);
-        addIskawProduct("Beef Offal", "Edible beef offal, priced per kilogram.", "Beef", "1 kg", 280, 20);
-
+    	//add cowhide products for the Iskaw shop
         // Each hide color is saved as its own product so the stock can be tracked separately
         String[] colors = {"Cognac", "Dark Brown", "Dark Charcoal Gray"};
         for (String color : colors) {
-            addIskawProduct("Full Hide - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 hide", 10800, 5);
-            addIskawProduct("Half Hide - " + color, "Cowhide color: " + color + ".", "Cowhide", "1/2 hide", 5850, 5);
-            addIskawProduct("Quarter Hide - " + color, "Cowhide color: " + color + ".", "Cowhide", "1/4 hide", 3150, 5);
-            addIskawProduct("Coupon - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 piece", 1500, 5);
-            addIskawProduct("Double Panel - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 piece", 650, 5);
-            addIskawProduct("Panel - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 piece", 350, 5);
+        	addSeed("Full Hide - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 hide", 10800, 5);
+        	addSeed("Half Hide - " + color, "Cowhide color: " + color + ".", "Cowhide", "1/2 hide", 5850, 5);
+        	addSeed("Quarter Hide - " + color, "Cowhide color: " + color + ".", "Cowhide", "1/4 hide", 3150, 5);
+        	addSeed("Coupon - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 piece", 1500, 5);
+        	addSeed("Double Panel - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 piece", 650, 5);
+        	addSeed("Panel - " + color, "Cowhide color: " + color + ".", "Cowhide", "1 piece", 350, 5);
         }
+        
     }
 
-    private void addIskawProduct(String name, String desc, String category, String unit, double price, int stock) {
-        // Check the name and unit first so old saved inventory will not get duplicate products
-        boolean alreadyExists = store.products.stream().anyMatch(p ->
-                p.getName().equalsIgnoreCase(name) && p.getUnit().equalsIgnoreCase(unit));
-
-        if (!alreadyExists) {
-            addSeed(name, desc, category, unit, price, stock);
-        }
-    }
-    
-    // add Images
+   // add Images
     private void attachDefaultImages() {
         Path imgDir = files.images();
-        if (!Files.isDirectory(imgDir)) return;
+        if (!Files.isDirectory(imgDir)) 
+        	return;
+        
         for (Product p : store.products) {
-            if (p.hasImage() && Files.isRegularFile(imgDir.resolve(p.getImageFile()))) continue;
+            if (p.hasImage() && Files.isRegularFile(imgDir.resolve(p.getImageFile()))) 
+            	continue;
+            
             for (String ext : IMAGE_TYPES) {
                 String candidate = p.getName() + "." + ext;
                 if (Files.isRegularFile(imgDir.resolve(candidate))) {
@@ -232,6 +206,7 @@ public class ProductSystem {
     }
 
     private void addSeed(String name, String desc, String category, String unit, double price, int stock) {
+    	
         Product p = new Product(newProductId(), name, desc, category, unit, price);
         store.products.add(p);
         store.inventory.setStock(p.getId(), stock);
@@ -243,7 +218,7 @@ public class ProductSystem {
 
     // ------------------------------------------------------------------ users
 
-    /** @throws IllegalArgumentException when the credentials are wrong */
+    //@throws IllegalArgumentException when the credentials are wrong
     public User login(String username, String password) {
         String key = username == null ? "" : username.trim().toLowerCase();
         return store.users.stream()
@@ -252,7 +227,9 @@ public class ProductSystem {
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect username or password."));
     }
 
-    public List<User> getUsers() { return Collections.unmodifiableList(store.users); }
+    public List<User> getUsers() { 
+    	return Collections.unmodifiableList(store.users); 
+    }
 
     public List<Clerk> getClerks() {
         return store.users.stream().filter(u -> u instanceof Clerk).map(u -> (Clerk) u).collect(Collectors.toList());
@@ -262,22 +239,24 @@ public class ProductSystem {
         return store.users.stream().filter(u -> u.getUsername().equals(username)).findFirst();
     }
 
-    /** Display name for a username (falls back to the username itself). */
+    //Display name for a username (falls back to the username itself). 
     public String displayName(String username) {
         return findUser(username).map(User::getFullName).orElse(username);
     }
 
     public synchronized Clerk addClerk(User actor, String username, String fullName, String password) {
         requireManager(actor, "add staff accounts");
+        
         if (findUser(username == null ? "" : username.trim().toLowerCase()).isPresent())
             throw new IllegalArgumentException("That username is already taken.");
+        
         Clerk c = new Clerk(username, fullName, password);
         store.users.add(c);
         save();
         return c;
     }
 
-    /** Self sign-up: anyone can create a customer account. */
+    //Self sign-up: anyone can create a customer account. 
     public synchronized Customer registerCustomer(String username, String fullName, String password) {
         String key = username == null ? "" : username.trim().toLowerCase();
         if (findUser(key).isPresent()) throw new IllegalArgumentException("That username is already taken.");
@@ -292,7 +271,7 @@ public class ProductSystem {
                 .sorted(Comparator.comparing(Customer::getFullName)).collect(Collectors.toList());
     }
 
-    /** Sales linked to a customer account, newest first (voided ones included). */
+    // Sales linked to a customer account, newest first (voided ones included).
     public List<SaleTransaction> getPurchasesOf(String username) {
         return getTransactions().stream()
                 .filter(t -> t instanceof SaleTransaction && username.equals(((SaleTransaction) t).getCustomerUsername()))
@@ -300,7 +279,8 @@ public class ProductSystem {
     }
 
     private void requireStaff(User actor, String action) {
-        if (actor == null || !actor.isStaff()) throw new SecurityException("Only staff can " + action + ".");
+        if (actor == null || !actor.isStaff()) 
+        	throw new SecurityException("Only staff can " + action + ".");
     }
 
     private void requireManager(User actor, String action) {
@@ -310,7 +290,9 @@ public class ProductSystem {
 
     // ------------------------------------------------------------------ products & inventory
 
-    public Inventory getInventory() { return store.inventory; }
+    public Inventory getInventory() { 
+    	return store.inventory; 
+    }
 
     public List<Product> getProducts() {
         List<Product> copy = new ArrayList<>(store.products);
@@ -329,9 +311,12 @@ public class ProductSystem {
     public synchronized Product addProduct(User actor, String name, String description, String category,
                                            String unit, double price, int initialStock) {
         requireManager(actor, "add products");
-        if (initialStock < 0) throw new IllegalArgumentException("Initial stock cannot be negative.");
+        if (initialStock < 0) 
+        	throw new IllegalArgumentException("Initial stock cannot be negative.");
         Product p = new Product(newProductId(), name, description, category, unit, price); // validates input
+        
         ensureUnique(p.getName(), p.getUnit(), null);
+        
         store.products.add(p);
         store.inventory.setStock(p.getId(), initialStock);
         save();
@@ -343,6 +328,7 @@ public class ProductSystem {
         requireManager(actor, "edit products");
         Product check = new Product(p.getId(), name, description, category, unit, price); // validates input first
         ensureUnique(check.getName(), check.getUnit(), p);
+        
         p.setName(name);
         p.setDescription(description);
         p.setCategory(category);
@@ -355,6 +341,7 @@ public class ProductSystem {
         requireManager(actor, "delete products");
         store.products.remove(p);
         store.inventory.remove(p.getId());
+        
         deleteImageFile(p.getImageFile());
         save();
     }
@@ -364,18 +351,22 @@ public class ProductSystem {
     private static final long MAX_IMAGE_BYTES = 8L * 1024 * 1024;
     private static final List<String> IMAGE_TYPES = java.util.Arrays.asList("png", "jpg", "jpeg", "gif", "bmp");
 
-    /** Copies a picture chosen by the manager into the data/images folder and attaches it to the product. */
+    //Copies a picture chosen by the manager into the data/images folder and attaches it to the product.
     public synchronized void setProductImage(User actor, Product p, Path source) {
+    	
         requireManager(actor, "change product photos");
-        if (source == null || !Files.isRegularFile(source)) throw new IllegalArgumentException("That picture file could not be found.");
+        if (source == null || !Files.isRegularFile(source)) 
+        	throw new IllegalArgumentException("That picture file could not be found.");
         String name = source.getFileName().toString().toLowerCase();
         String ext = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : "";
+        
         if (!IMAGE_TYPES.contains(ext))
             throw new IllegalArgumentException("Please choose a PNG, JPG, GIF or BMP picture.");
         try {
             if (Files.size(source) > MAX_IMAGE_BYTES)
                 throw new IllegalArgumentException("That picture is larger than 8 MB. Please choose a smaller one.");
             Files.createDirectories(files.images());
+            
             String stored = p.getId() + "-" + System.currentTimeMillis() + "." + ext;
             Files.copy(source, files.images().resolve(stored), StandardCopyOption.REPLACE_EXISTING);
             String old = p.getImageFile();
@@ -391,26 +382,34 @@ public class ProductSystem {
         requireManager(actor, "change product photos");
         String old = p.getImageFile();
         p.setImageFile(null);
+        
         deleteImageFile(old);
         save();
     }
 
-    /** The picture file of a product, or null when it has none (or the file went missing). */
+    //The picture file of a product, or null when it has none (or the file went missing).
     public Path getImagePath(Product p) {
-        if (p == null || !p.hasImage()) return null;
+    	
+        if (p == null || !p.hasImage()) 
+        	return null;
+        
         Path f = files.images().resolve(p.getImageFile());
         return Files.isRegularFile(f) ? f : null;
     }
 
     private void deleteImageFile(String file) {
-        if (file == null || file.isEmpty()) return;
-        try { Files.deleteIfExists(files.images().resolve(file)); } catch (IOException ignored) { }
+        if (file == null || file.isEmpty()) 
+        	return;
+        try { 
+        	Files.deleteIfExists(files.images().resolve(file)); 
+        }  catch (IOException ignored) { }
     }
 
     private void ensureUnique(String name, String unit, Product ignore) {
         boolean dup = store.products.stream().anyMatch(o -> o != ignore
                 && o.getName().equalsIgnoreCase(name) && o.getUnit().equalsIgnoreCase(unit));
-        if (dup) throw new IllegalArgumentException("A product named \"" + name + "\" (" + unit + ") already exists.");
+        if (dup) 
+        	throw new IllegalArgumentException("A product named \"" + name + "\" (" + unit + ") already exists.");
     }
 
     public synchronized void restock(User actor, Product p, int quantity) {
@@ -441,13 +440,15 @@ public class ProductSystem {
         return recordSale(actor, customer, null, lines, cashTendered);
     }
 
-    /** @param customerUsername username of a registered customer to link the sale to, or null */
+    //@param customerUsername username of a registered customer to link the sale to, or null
     public synchronized SaleTransaction recordSale(User actor, String customer, String customerUsername,
                                                    List<SaleLine> lines, double cashTendered)
             throws InsufficientStockException {
         requireStaff(actor, "record sales");
+        
         if (customerUsername != null && !findUser(customerUsername).filter(u -> u instanceof Customer).isPresent())
             throw new IllegalArgumentException("That customer account does not exist.");
+        
         SaleTransaction t = new SaleTransaction(nextTransactionId(), actor.getUsername(), customer,
                 customerUsername, lines, cashTendered);
         t.applyTo(store.inventory);
@@ -466,14 +467,14 @@ public class ProductSystem {
         return commit(t);
     }
 
-    /** Voids any recorded transaction and reverses its effect on inventory. */
+    //Voids any recorded transaction and reverses its effect on inventory.
     public synchronized void voidTransaction(User actor, Transaction t) throws InsufficientStockException {
         requireStaff(actor, "void transactions");
         t.voidBy(actor.getUsername(), store.inventory);
         save();
     }
 
-    /** Newest first. */
+    // Newest first.
     public List<Transaction> getTransactions() {
         List<Transaction> copy = new ArrayList<>(store.transactions);
         Collections.reverse(copy);
@@ -486,22 +487,28 @@ public class ProductSystem {
 
     // ------------------------------------------------------------------ customer orders
 
-    /** A customer places an order. Stock is checked now but only deducted when a clerk fulfils it. */
+    //A customer places an order. Stock is checked now but only deducted when a clerk fulfils it.
     public synchronized Order placeOrder(User actor, List<SaleLine> lines) throws InsufficientStockException {
-        if (!(actor instanceof Customer)) throw new SecurityException("Only customers can place orders.");
-        if (lines == null || lines.isEmpty()) throw new IllegalArgumentException("Add at least one product to your order.");
+        if (!(actor instanceof Customer)) 
+        	throw new SecurityException("Only customers can place orders.");
+        
+        if (lines == null || lines.isEmpty()) 
+        	throw new IllegalArgumentException("Add at least one product to your order.");
+        
         for (SaleLine l : lines) {
             int available = store.inventory.getStock(l.getProductId());
-            if (available < l.getQuantity()) throw new InsufficientStockException(l.getProductName(), available);
+            if (available < l.getQuantity()) 
+            	throw new InsufficientStockException(l.getProductName(), available);
         }
         Order o = new Order(String.format("O-%05d", store.orderCounter + 1), actor.getUsername(), actor.getFullName(), lines);
+        
         store.orderCounter++;
         store.orders.add(o);
         save();
         return o;
     }
 
-    /** Newest first. */
+    //Newest first.
     public List<Order> getOrders() {
         List<Order> copy = new ArrayList<>(store.orders);
         Collections.reverse(copy);
@@ -523,8 +530,10 @@ public class ProductSystem {
      */
     public synchronized SaleTransaction fulfillOrder(User actor, Order order, double cashTendered)
             throws InsufficientStockException {
+    	
         requireStaff(actor, "fulfil orders");
         requirePending(order);
+        
         SaleTransaction sale = recordSale(actor, order.getCustomerName(), order.getCustomerUsername(),
                 order.getLines(), cashTendered);
         order.complete(actor.getUsername(), sale.getId());
@@ -532,11 +541,14 @@ public class ProductSystem {
         return sale;
     }
 
-    /** Staff can cancel any pending order; a customer can cancel only their own. */
+    //Staff can cancel any pending order; a customer can cancel only their own.
     public synchronized void cancelOrder(User actor, Order order) {
-        if (actor == null) throw new SecurityException("Nobody is logged in.");
+        if (actor == null) 
+        	throw new SecurityException("Nobody is logged in.");
+        
         if (!actor.isStaff() && !actor.getUsername().equals(order.getCustomerUsername()))
             throw new SecurityException("You can only cancel your own orders.");
+        
         requirePending(order);
         order.cancel(actor.getUsername());
         save();
@@ -548,7 +560,7 @@ public class ProductSystem {
                     + order.getStatus().getLabel().toLowerCase() + ".");
     }
 
-    /** Cash currently in the wallet: sales + cash donations, excluding voided ones. */
+    //Cash currently in the wallet: sales + cash donations, excluding voided ones. 
     public double getWalletBalance() {
         return store.transactions.stream().filter(t -> !t.isVoided()).mapToDouble(Transaction::getCashAmount).sum();
     }
