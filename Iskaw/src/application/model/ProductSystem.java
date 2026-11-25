@@ -1,5 +1,9 @@
 package application.model;
 
+import application.storage.CharityDispatchFileReader;
+import application.storage.CharityDispatchFileWriter;
+import application.storage.CharityDonationFileReader;
+import application.storage.CharityDonationFileWriter;
 import application.storage.DataFiles;
 import application.storage.OrderFileReader;
 import application.storage.OrderFileWriter;
@@ -9,8 +13,6 @@ import application.storage.SaleLineFileReader;
 import application.storage.SaleLineFileWriter;
 import application.storage.TransactionFileReader;
 import application.storage.TransactionFileWriter;
-import application.storage.CharityDonationFileReader;
-import application.storage.CharityDonationFileWriter;
 import application.storage.UserFileReader;
 import application.storage.UserFileWriter;
 import java.io.IOException;
@@ -21,8 +23,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -30,7 +35,7 @@ import java.util.stream.Collectors;
 public class ProductSystem {
 
     // In-memory state container holding all application entities and ID counters.
-	static class Store {
+    static class Store {
         private static final long serialVersionUID = 1L;
         final List<User> users = new ArrayList<>();
         final List<Product> products = new ArrayList<>();
@@ -40,6 +45,8 @@ public class ProductSystem {
         List<Order> orders = new ArrayList<>();
         int orderCounter = 0;
         final List<ItemDonation> charityDonations = new ArrayList<>();
+        final List<CharityDispatch> charityDispatches = new ArrayList<>();
+        int dispatchCounter = 0;
     }
 
     private final DataFiles files;
@@ -88,7 +95,7 @@ public class ProductSystem {
         save();
     }
 
- // Reads all entity records from storage text files into a new Store instance.
+    // Reads all entity records from storage text files into a new Store instance.
     private Store loadFromFiles() throws IOException {
         Store s = new Store();
         s.users.addAll(UserFileReader.read(files.users()));
@@ -99,9 +106,10 @@ public class ProductSystem {
         s.transactions.addAll(TransactionFileReader.read(files.transactions(), lines));
         s.orders.addAll(OrderFileReader.read(files.orders(), lines));
         s.charityDonations.addAll(CharityDonationFileReader.read(files.charityDonations()));
+        s.charityDispatches.addAll(CharityDispatchFileReader.read(files.charityDispatches()));
 
         // Migrate any existing ItemDonation records from transactions.txt into charityDonations
-        java.util.Set<String> existingCharityIds = s.charityDonations.stream()
+        Set<String> existingCharityIds = s.charityDonations.stream()
                 .map(ItemDonation::getId)
                 .collect(Collectors.toSet());
         for (Transaction t : s.transactions) {
@@ -116,6 +124,7 @@ public class ProductSystem {
         s.charityDonations.forEach(d -> allTxIds.add(d.getId()));
         s.transactionCounter = highest(allTxIds);
         s.orderCounter = highest(s.orders.stream().map(Order::getId).collect(Collectors.toList()));
+        s.dispatchCounter = highest(s.charityDispatches.stream().map(CharityDispatch::getId).collect(Collectors.toList()));
         return s;
     }
 
@@ -138,6 +147,8 @@ public class ProductSystem {
             TransactionFileWriter.write(files.transactions(), store.transactions);
             OrderFileWriter.write(files.orders(), store.orders);
             SaleLineFileWriter.write(files.lines(), store.transactions, store.orders);
+            CharityDonationFileWriter.write(files.charityDonations(), store.charityDonations);
+            CharityDispatchFileWriter.write(files.charityDispatches(), store.charityDispatches);
             java.nio.file.Files.createDirectories(files.images());
         } catch (IOException e) {
             throw new IllegalStateException("Could not save data: " + e.getMessage(), e);
@@ -496,7 +507,6 @@ public class ProductSystem {
         requireStaff(actor, "record donations");
         ItemDonation donation = new ItemDonation(nextTransactionId(), actor.getUsername(), donor, itemName, quantity, notes);
         store.charityDonations.add(donation);
-        // Also add to store.transactions ONLY if you still want it visible in the Cash & Transactions table:
         store.transactionCounter++;
         store.transactions.add(donation);
         save();
@@ -506,6 +516,54 @@ public class ProductSystem {
     // Getter for all donated charity items ordered newest first.
     public List<ItemDonation> getCharityDonations() {
         List<ItemDonation> copy = new ArrayList<>(store.charityDonations);
+        Collections.reverse(copy);
+        return copy;
+    }
+
+    // Allows a manager to dispatch selected donated items and quantities to a charity with notes.
+    public synchronized CharityDispatch donateItemsToCharity(User actor, Map<ItemDonation, Integer> itemsAndQuantities,
+                                                       String charityName, String notes) {
+        requireManager(actor, "donate items to charity");
+        if (itemsAndQuantities == null || itemsAndQuantities.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one donated item to send to charity.");
+        }
+        if (charityName == null || charityName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Please enter the recipient charity or organization.");
+        }
+
+        String noteEntry = "To " + charityName.trim()
+                + ((notes != null && !notes.trim().isEmpty()) ? " (" + notes.trim() + ")" : "");
+
+        Map<String, Integer> dispatchedSummary = new LinkedHashMap<>();
+
+        for (Map.Entry<ItemDonation, Integer> entry : itemsAndQuantities.entrySet()) {
+            ItemDonation item = entry.getKey();
+            int qty = entry.getValue();
+            if (item.isVoided()) {
+                throw new IllegalArgumentException("Cannot donate voided item " + item.getId() + ".");
+            }
+            if (qty <= 0 || qty > item.getRemainingQuantity()) {
+                throw new IllegalArgumentException("Invalid quantity for \"" + item.getItemName()
+                        + "\" (available: " + item.getRemainingQuantity() + ").");
+            }
+            dispatchedSummary.merge(item.getItemName(), qty, Integer::sum);
+        }
+
+        for (Map.Entry<ItemDonation, Integer> entry : itemsAndQuantities.entrySet()) {
+            entry.getKey().donateToCharity(entry.getValue(), noteEntry);
+        }
+
+        store.dispatchCounter++;
+        String dispatchId = String.format("D-%05d", store.dispatchCounter);
+        CharityDispatch dispatch = new CharityDispatch(dispatchId, actor.getUsername(), charityName, notes, dispatchedSummary);
+        store.charityDispatches.add(dispatch);
+        save();
+        return dispatch;
+    }
+
+    // Getter for all charity dispatch records ordered newest first.
+    public List<CharityDispatch> getCharityDispatches() {
+        List<CharityDispatch> copy = new ArrayList<>(store.charityDispatches);
         Collections.reverse(copy);
         return copy;
     }
@@ -621,40 +679,6 @@ public class ProductSystem {
         }
 
         store.users.remove(target);
-        save();
-    }
-    
- // Allows a manager to dispatch selected donated items and quantities to a charity with notes.
-    public synchronized void donateItemsToCharity(User actor, java.util.Map<ItemDonation, Integer> itemsAndQuantities,
-                                                    String charityName, String notes) {
-        requireManager(actor, "donate items to charity");
-        if (itemsAndQuantities == null || itemsAndQuantities.isEmpty()) {
-            throw new IllegalArgumentException("Select at least one donated item to send to charity.");
-        }
-        if (charityName == null || charityName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Please enter the recipient charity or organization.");
-        }
-
-        String noteEntry = "To " + charityName.trim()
-                + ((notes != null && !notes.trim().isEmpty()) ? " (" + notes.trim() + ")" : "");
-
-        // Validate all quantities first before mutating state
-        for (java.util.Map.Entry<ItemDonation, Integer> entry : itemsAndQuantities.entrySet()) {
-            ItemDonation item = entry.getKey();
-            int qty = entry.getValue();
-            if (item.isVoided()) {
-                throw new IllegalArgumentException("Cannot donate voided item " + item.getId() + ".");
-            }
-            if (qty <= 0 || qty > item.getRemainingQuantity()) {
-                throw new IllegalArgumentException("Invalid quantity for \"" + item.getItemName()
-                        + "\" (available: " + item.getRemainingQuantity() + ").");
-            }
-        }
-
-        // Apply distribution quantities and save
-        for (java.util.Map.Entry<ItemDonation, Integer> entry : itemsAndQuantities.entrySet()) {
-            entry.getKey().donateToCharity(entry.getValue(), noteEntry);
-        }
         save();
     }
 }

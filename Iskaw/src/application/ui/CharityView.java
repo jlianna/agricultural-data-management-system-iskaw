@@ -1,5 +1,6 @@
 package application.ui;
 
+import application.model.CharityDispatch;
 import application.model.ItemDonation;
 import application.model.ProductSystem;
 import application.model.User;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// Manager-only screen for viewing donated charity items and dispatching them to charities
+// Manager-only screen for viewing donated charity items, dispatching them to charities, and viewing dispatch history
 public class CharityView extends View {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy h:mm a");
 
@@ -31,7 +32,9 @@ public class CharityView extends View {
     private final StatCard availableItems = new StatCard("Items awaiting charity", "stat-green");
     private final StatCard totalUnitsAvailable = new StatCard("Available units", "stat-blue");
     private final StatCard totalUnitsDonated = new StatCard("Units sent to charity", "stat-butter");
+
     private final TableView<ItemDonation> table = Ui.table("No donated items recorded yet.");
+    private final TableView<CharityDispatch> historyTable = Ui.table("No items have been sent to charity yet.");
     private final TextField search = new TextField();
 
     public CharityView(ProductSystem system, User manager) {
@@ -44,19 +47,29 @@ public class CharityView extends View {
             c.setMaxWidth(Double.MAX_VALUE);
         }
 
+        // Top table: Donated items received from donors
         table.getColumns().add(Ui.column("ID", 90, ItemDonation::getId));
-        table.getColumns().add(Ui.column("Date", 155, d -> d.getTimestamp().format(DATE_FMT)));
+        table.getColumns().add(Ui.column("Date Received", 155, d -> d.getTimestamp().format(DATE_FMT)));
         table.getColumns().add(Ui.column("Donor", 130, ItemDonation::getParty));
         table.getColumns().add(Ui.column("Donated Item", 170, ItemDonation::getItemName));
         table.getColumns().add(Ui.column("Remaining / Total", 130,
                 d -> d.getRemainingQuantity() + " / " + d.getQuantity()));
         table.getColumns().add(Ui.column("Item Notes", 180, ItemDonation::getNotes));
-        table.getColumns().add(Ui.column("Charity Status", 170, ItemDonation::getCharityStatus));
-        table.getColumns().add(Ui.column("Distribution Log", 210, ItemDonation::getCharityDistributionNotes));
+        table.getColumns().add(Ui.column("Status", 175, ItemDonation::getCharityStatus));
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        search.setPromptText("Search donor, item, or notes…");
-        search.setPrefWidth(250);
+        // Bottom table: History of dispatches sent to charities
+        historyTable.getColumns().add(Ui.column("Dispatch ID", 100, CharityDispatch::getId));
+        historyTable.getColumns().add(Ui.column("Date Sent", 155, d -> d.getTimestamp().format(DATE_FMT)));
+        historyTable.getColumns().add(Ui.column("Charity / Recipient", 190, CharityDispatch::getCharityName));
+        historyTable.getColumns().add(Ui.column("Items & Quantities Sent", 270, CharityDispatch::getItemsSummary));
+        historyTable.getColumns().add(Ui.column("Total Units", 95, d -> String.valueOf(d.getTotalUnits())));
+        historyTable.getColumns().add(Ui.column("Notes", 200, CharityDispatch::getNotes));
+        historyTable.getColumns().add(Ui.column("Sent By", 120, d -> system.displayName(d.getDispatchedBy())));
+        VBox.setVgrow(historyTable, Priority.ALWAYS);
+
+        search.setPromptText("Search donor, item, charity, or notes…");
+        search.setPrefWidth(270);
         search.textProperty().addListener((o, a, b) -> reload());
 
         HBox actions = new HBox(10,
@@ -67,10 +80,18 @@ public class CharityView extends View {
 
         HBox titleRow = new HBox(14,
                 Ui.heading("Charity donations"),
-                Ui.subtle("In-kind items donated separately from store inventory. Select items to send to a charity."));
+                Ui.subtle("In-kind items donated separately from store inventory, plus charity dispatch history."));
         titleRow.setAlignment(Pos.BOTTOM_LEFT);
 
-        getChildren().addAll(titleRow, cards, actions, table);
+        getChildren().addAll(
+                titleRow,
+                cards,
+                actions,
+                Ui.sectionTitle("Donated Items Pool"),
+                table,
+                Ui.sectionTitle("Charity Dispatch History"),
+                historyTable
+        );
     }
 
     // Opens a modal dialog allowing the manager to check multiple donated items, set quantities, and add charity notes
@@ -92,7 +113,6 @@ public class CharityView extends View {
         notes.setPromptText("e.g. Picked up by coordinator, batch #1");
         notes.setPrefWidth(280);
 
-        // Build checklist rows for each available donated item with a quantity input
         GridPane itemGrid = new GridPane();
         itemGrid.setHgap(12);
         itemGrid.setVgap(8);
@@ -150,15 +170,26 @@ public class CharityView extends View {
 
     private void reload() {
         String q = search.getText() == null ? "" : search.getText().trim().toLowerCase();
-        List<ItemDonation> filtered = system.getCharityDonations().stream()
+
+        List<ItemDonation> filteredItems = system.getCharityDonations().stream()
                 .filter(d -> q.isEmpty()
                         || d.getId().toLowerCase().contains(q)
                         || d.getParty().toLowerCase().contains(q)
                         || d.getItemName().toLowerCase().contains(q)
                         || d.getNotes().toLowerCase().contains(q)
-                        || d.getCharityDistributionNotes().toLowerCase().contains(q))
+                        || d.getCharityStatus().toLowerCase().contains(q))
                 .collect(Collectors.toList());
-        table.getItems().setAll(filtered);
+        table.getItems().setAll(filteredItems);
+
+        List<CharityDispatch> filteredHistory = system.getCharityDispatches().stream()
+                .filter(d -> q.isEmpty()
+                        || d.getId().toLowerCase().contains(q)
+                        || d.getCharityName().toLowerCase().contains(q)
+                        || d.getItemsSummary().toLowerCase().contains(q)
+                        || d.getNotes().toLowerCase().contains(q)
+                        || system.displayName(d.getDispatchedBy()).toLowerCase().contains(q))
+                .collect(Collectors.toList());
+        historyTable.getItems().setAll(filteredHistory);
     }
 
     @Override

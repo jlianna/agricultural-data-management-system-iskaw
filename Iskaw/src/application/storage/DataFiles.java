@@ -52,6 +52,11 @@ public class DataFiles {
         return dir.resolve("charity_donations.txt");
     }
     
+    // charity dispatches
+    public Path charityDispatches() {
+        return dir.resolve("charity_dispatches.txt");
+    }
+    
     //True when a saved copy already exists in the folder. 
     public boolean exists() {
         return Files.exists(users()) || Files.exists(products());
