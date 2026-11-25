@@ -21,12 +21,13 @@ import java.io.File;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-/** Manager-only product catalogue: add, edit and delete products. */
+// Manager-only product catalogue screen for adding, editing, and deleting products
 public class ProductsView extends View {
     private final ProductSystem system;
     private final User user;
     private final TableView<Product> table = new TableView<>();
 
+    // Form input fields, action buttons, and temporary photo state trackers
     private final TextField name = new TextField();
     private final TextArea description = new TextArea();
     private final ComboBox<String> category = new ComboBox<>();
@@ -42,10 +43,12 @@ public class ProductsView extends View {
     private boolean removePhoto;        // "Remove photo" pressed but not saved yet
     private File lastFolder;
 
+    // Initializes the split layout with the product catalogue table on the left and the editor form on the right
     public ProductsView(ProductSystem system, User user) {
         this.system = system;
         this.user = user;
 
+        // Configure table sizing, empty placeholder, and custom square photo thumbnail column
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("No products yet. Add your first one on the right."));
         table.setFixedCellSize(46);
@@ -55,6 +58,7 @@ public class ProductsView extends View {
         photoCol.setSortable(false);
         photoCol.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue()));
         photoCol.setCellFactory(col -> new TableCell<Product, Product>() {
+            // Renders a 36x36 square thumbnail or placeholder inside each product row
             @Override
             protected void updateItem(Product item, boolean empty) {
                 super.updateItem(item, empty);
@@ -63,6 +67,8 @@ public class ProductsView extends View {
                 setAlignment(Pos.CENTER);
             }
         });
+
+        // Add product detail columns and bind row selection to populate the editor form
         table.getColumns().add(photoCol);
         table.getColumns().add(Ui.column("Product", 190, Product::getName));
         table.getColumns().add(Ui.column("Category", 110, Product::getCategory));
@@ -73,6 +79,7 @@ public class ProductsView extends View {
         table.getSelectionModel().selectedItemProperty().addListener((o, a, p) -> fill(p));
         VBox.setVgrow(table, Priority.ALWAYS);
 
+        // Configure text inputs and editable category dropdown prompts
         description.setPrefRowCount(3);
         description.setWrapText(true);
         category.setEditable(true);
@@ -82,6 +89,7 @@ public class ProductsView extends View {
         price.setPromptText("0.00");
         initialStock.setPromptText("0");
 
+        // Initialize CRUD action buttons for adding, updating, deleting, and clearing form selections
         Button add = Ui.button("Add as new product", "btn-accent", this::addProduct);
         save = Ui.button("Save changes", "btn-primary", this::saveChanges);
         delete = Ui.button("Delete", "btn-danger", this::deleteProduct);
@@ -90,6 +98,7 @@ public class ProductsView extends View {
         save.setMaxWidth(Double.MAX_VALUE);
         HBox row2 = new HBox(8, delete, clear);
 
+        // Configure the product photo preview box and choose/remove image buttons
         Button choosePhoto = Ui.button("Choose photo…", "btn-secondary", this::choosePhoto);
         removePhotoButton = Ui.button("Remove", "btn-secondary", this::clearPhoto);
         VBox photoButtons = new VBox(8, choosePhoto, removePhotoButton,
@@ -100,6 +109,7 @@ public class ProductsView extends View {
         HBox photoRow = new HBox(12, photoHolder, photoButtons);
         photoRow.setAlignment(Pos.CENTER_LEFT);
 
+        // Assemble all form fields and buttons into the right-hand card container
         VBox form = new VBox(8, formTitle,
                 Ui.fieldLabel("PHOTO"), photoRow,
                 Ui.fieldLabel("NAME"), name,
@@ -120,6 +130,7 @@ public class ProductsView extends View {
         formScroll.setPrefWidth(335);
         formScroll.setMinWidth(335);
 
+        // Combine the header, product table, and scrollable form into the main view
         HBox body = new HBox(16, table, formScroll);
         HBox.setHgrow(table, Priority.ALWAYS);
         VBox.setVgrow(body, Priority.ALWAYS);
@@ -130,6 +141,7 @@ public class ProductsView extends View {
         fill(null);
     }
 
+    // Populates the form with the selected product's details or resets it for creating a new product
     private void fill(Product p) {
         boolean editing = p != null;
         formTitle.setText(editing ? "Edit product" : "Add a product");
@@ -139,6 +151,8 @@ public class ProductsView extends View {
         pendingPhoto = null;
         removePhoto = false;
         showPhoto(p);
+
+        // Load existing values when editing, or clear all inputs when adding a new product
         if (editing) {
             name.setText(p.getName());
             description.setText(p.getDescription());
@@ -159,6 +173,7 @@ public class ProductsView extends View {
 
     // ------------------------------------------------------------ photo
 
+    // Updates the photo preview box based on pending file selection, removal state, or saved product photo
     private void showPhoto(Product p) {
         photoHolder.getChildren().clear();
         if (pendingPhoto != null) {
@@ -171,6 +186,7 @@ public class ProductsView extends View {
         removePhotoButton.setDisable(pendingPhoto == null && (removePhoto || p == null || !p.hasImage()));
     }
 
+    // Opens a file chooser dialog for selecting a local image file to stage as the product photo
     private void choosePhoto() {
         FileChooser fc = new FileChooser();
         fc.setTitle("Choose a product photo");
@@ -184,23 +200,28 @@ public class ProductsView extends View {
         showPhoto(table.getSelectionModel().getSelectedItem());
     }
 
+    // Clears any staged photo and flags the existing product photo for removal upon saving
     private void clearPhoto() {
         pendingPhoto = null;
         removePhoto = true;
         showPhoto(table.getSelectionModel().getSelectedItem());
     }
 
+    // Retrieves the typed category text from the editable ComboBox editor or falls back to its selected value
     private String categoryText() {
         // an editable ComboBox keeps typed text in its editor until committed
         String typed = category.getEditor().getText();
         return typed == null || typed.trim().isEmpty() ? category.getValue() : typed;
     }
 
+    // Validates form inputs, creates a new product with optional opening stock and photo, and resets the form
     private void addProduct() {
         Ui.attempt(() -> {
             int stock = initialStock.getText().trim().isEmpty() ? 0 : Ui.parseWhole(initialStock.getText(), "Opening stock");
             Product added = system.addProduct(user, name.getText(), description.getText(), categoryText(),
                     unit.getText(), Ui.parseMoney(price.getText(), "Price"), stock);
+
+            // Attach the pending photo if one was selected, catching image errors without rolling back product creation
             String photoProblem = null;
             if (pendingPhoto != null) {
                 try {
@@ -209,6 +230,8 @@ public class ProductsView extends View {
                     photoProblem = ex.getMessage();
                 }
             }
+
+            // Reset form selection, reload table data, and report any non-fatal image upload warning
             table.getSelectionModel().clearSelection();
             refresh();
             fill(null);
@@ -217,6 +240,7 @@ public class ProductsView extends View {
         });
     }
 
+    // Updates the currently selected product's metadata and applies any pending photo addition or removal
     private void saveChanges() {
         Product p = table.getSelectionModel().getSelectedItem();
         if (p == null) return;
@@ -231,6 +255,7 @@ public class ProductsView extends View {
         });
     }
 
+    // Prompts for confirmation and deletes the selected product from the catalogue
     private void deleteProduct() {
         Product p = table.getSelectionModel().getSelectedItem();
         if (p == null) return;
@@ -242,6 +267,7 @@ public class ProductsView extends View {
         }
     }
 
+    // Reloads the product list and available categories while preserving unsaved category input
     @Override
     public void refresh() {
         String keep = categoryText();

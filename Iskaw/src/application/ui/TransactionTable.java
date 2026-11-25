@@ -10,17 +10,15 @@ import javafx.scene.control.TableView;
 
 import java.util.List;
 
-/** Reusable transaction grid used by the dashboards and the Cash & Transactions screen. */
+// Reusable transaction table component used across dashboards and the Cash & Transactions screen
 public class TransactionTable extends TableView<Transaction> {
 
-    /**
-     * @param showStaff add a "Recorded by" column
-     * @param compact   narrow layout (short date, no details column) for dashboards
-     */
+    // Configures table columns, status badge rendering, and voided-row styling based on staff visibility and compact mode
     public TransactionTable(ProductSystem system, boolean showStaff, boolean compact) {
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         setPlaceholder(new Label("No transactions to show."));
 
+        // Add core transaction columns, adjusting date format and optional details/staff columns for compact layouts
         getColumns().add(Ui.column("ID", 70, Transaction::getId));
         if (compact) getColumns().add(Ui.column("Date", 135, t -> Ui.shortDateTime(t.getTimestamp())));
         else getColumns().add(Ui.column("Date & time", 155, t -> Ui.dateTime(t.getTimestamp())));
@@ -32,8 +30,10 @@ public class TransactionTable extends TableView<Transaction> {
         if (showStaff)
             getColumns().add(Ui.column("Recorded by", 120, t -> system.displayName(t.getRecordedBy())));
 
+        // Configure the status column to render styled badges distinguishing active vs. voided transactions
         TableColumn<Transaction, String> status = Ui.column("Status", 100, Transaction::getStatus);
         status.setCellFactory(col -> new TableCell<Transaction, String>() {
+            // Renders a status badge inside each non-empty status cell
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -47,7 +47,9 @@ public class TransactionTable extends TableView<Transaction> {
         });
         getColumns().add(status);
 
+        // Apply muted row styling to voided transactions
         setRowFactory(tv -> new TableRow<Transaction>() {
+            // Adds or clears the voided-row CSS class depending on the transaction's voided state
             @Override
             protected void updateItem(Transaction t, boolean empty) {
                 super.updateItem(t, empty);
@@ -57,6 +59,7 @@ public class TransactionTable extends TableView<Transaction> {
         });
     }
 
+    // Replaces the table's transaction list while preserving the currently selected row if still present
     public void setData(List<Transaction> data) {
         Transaction selected = getSelectionModel().getSelectedItem();
         getItems().setAll(data);

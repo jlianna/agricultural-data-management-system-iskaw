@@ -24,17 +24,19 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
-/** Point-of-sale screen: pick products, build a cart, take cash and record the sale. */
+// Point-of-sale screen for selecting products, building a cart, collecting cash, and recording sales
 public class SalesView extends View {
     private final ProductSystem system;
     private final User user;
 
+    // Product catalogue list, search filter, and left-hand selection controls
     private final ObservableList<Product> catalog = FXCollections.observableArrayList();
     private final FilteredList<Product> visible = new FilteredList<>(catalog, p -> true);
     private final TableView<Product> productTable = new TableView<>();
     private final Spinner<Integer> quantity = new Spinner<>();
     private final TextField search = new TextField();
 
+    // Active shopping cart state and right-hand checkout controls
     private final ObservableList<SaleLine> cart = FXCollections.observableArrayList();
     private final TableView<SaleLine> cartTable = new TableView<>();
     private final TextField customer = new TextField();
@@ -43,11 +45,13 @@ public class SalesView extends View {
     private final Label total = new Label();
     private final Label change = new Label();
 
+    // Initializes the two-column point-of-sale layout with product picker on the left and checkout cart on the right
     public SalesView(ProductSystem system, User user, Navigator nav) {
         this.system = system;
         this.user = user;
 
         // ------------------------------------------------ left: product picker
+        // Filter the visible product table dynamically as the user types in the search box
         search.setPromptText("Search products…  (double-click a product to add it)");
         search.textProperty().addListener((o, a, b) -> {
             String q = b == null ? "" : b.trim().toLowerCase();
@@ -55,6 +59,7 @@ public class SalesView extends View {
                     || p.getCategory().toLowerCase().contains(q));
         });
 
+        // Configure product table columns, out-of-stock row styling, and double-click to add behavior
         productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         productTable.setPlaceholder(new Label("No products found."));
         productTable.getColumns().add(Ui.column("Product", 210, Product::getName));
@@ -64,6 +69,7 @@ public class SalesView extends View {
         productTable.setItems(visible);
         productTable.setRowFactory(tv -> {
             TableRow<Product> row = new TableRow<Product>() {
+                // Highlights out-of-stock product rows using the voided-row style class
                 @Override
                 protected void updateItem(Product p, boolean empty) {
                     super.updateItem(p, empty);
@@ -78,11 +84,13 @@ public class SalesView extends View {
         });
         VBox.setVgrow(productTable, Priority.ALWAYS);
 
+        // Configure the editable quantity spinner and commit manual input when focus leaves the editor
         quantity.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1));
         quantity.setEditable(true);
         quantity.setPrefWidth(90);
         quantity.getEditor().focusedProperty().addListener((o, was, now) -> { if (!now) commitQuantity(); });
 
+        // Assemble the quantity selector and product catalogue into the left card
         HBox addRow = new HBox(10, Ui.fieldLabel("QTY"), quantity,
                 Ui.button("Add to cart", "btn-primary", this::addToCart));
         addRow.setAlignment(Pos.CENTER_LEFT);
@@ -92,6 +100,7 @@ public class SalesView extends View {
         HBox.setHgrow(left, Priority.ALWAYS);
 
         // ------------------------------------------------ right: cart & payment
+        // Configure cart table columns to display selected items, quantities, and line subtotals
         cartTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         cartTable.setPlaceholder(new Label("The cart is empty."));
         cartTable.getColumns().add(Ui.column("Item", 170, SaleLine::getProductName));
@@ -101,10 +110,12 @@ public class SalesView extends View {
         cartTable.setPrefHeight(200);
         VBox.setVgrow(cartTable, Priority.ALWAYS);
 
+        // Configure registered customer dropdown and disable walk-in name field when an account is chosen
         customer.setPromptText("Walk-in customer");
         account.setPromptText("Registered customer (optional)");
         account.setMaxWidth(Double.MAX_VALUE);
         account.setConverter(new StringConverter<Customer>() {
+            // Converts Customer objects to readable display strings and leaves reverse conversion unused
             @Override public String toString(Customer c) { return c == null ? "" : c.getFullName() + " (" + c.getUsername() + ")"; }
             @Override public Customer fromString(String s) { return null; }
         });
@@ -114,6 +125,8 @@ public class SalesView extends View {
         });
         HBox accountRow = new HBox(6, account, Ui.button("Clear", "btn-secondary", () -> account.setValue(null)));
         HBox.setHgrow(account, Priority.ALWAYS);
+
+        // Configure cash input, live total/change readouts, and an exact-amount shortcut button
         cash.setPromptText("0.00");
         cash.textProperty().addListener((o, a, b) -> updateTotals());
         total.getStyleClass().add("total-label");
@@ -123,6 +136,7 @@ public class SalesView extends View {
         HBox cashRow = new HBox(8, cash, exact);
         HBox.setHgrow(cash, Priority.ALWAYS);
 
+        // Configure cart management buttons and the primary sale completion button
         Button remove = Ui.button("Remove item", "btn-danger", () -> {
             SaleLine l = cartTable.getSelectionModel().getSelectedItem();
             if (l != null) { cart.remove(l); updateTotals(); }
@@ -134,6 +148,7 @@ public class SalesView extends View {
         complete.setMaxWidth(Double.MAX_VALUE);
         complete.setStyle("-fx-font-size: 15px; -fx-padding: 12 16 12 16;");
 
+        // Assemble cart, customer, and payment controls into the fixed-width right card
         VBox right = new VBox(10, Ui.sectionTitle("2. Cart & payment"), cartTable, cartButtons,
                 Ui.fieldLabel("CUSTOMER (OPTIONAL)"), accountRow, customer,
                 Ui.fieldLabel("TOTAL DUE"), total,
@@ -142,6 +157,7 @@ public class SalesView extends View {
         right.setPrefWidth(380);
         right.setMinWidth(380);
 
+        // Combine header and split panels into the root container and initialize totals
         HBox body = new HBox(16, left, right);
         VBox.setVgrow(body, Priority.ALWAYS);
         HBox titleRow = new HBox(14, Ui.heading(user.isManager() ? "Record sale" : "New sale"),
@@ -152,15 +168,17 @@ public class SalesView extends View {
         updateTotals();
     }
 
+    // Returns the current available inventory count for the given product
     private int stockOf(Product p) {
         return system.getInventory().getStock(p.getId());
     }
 
+    // Sums the subtotals of all line items currently in the cart
     private double cartTotal() {
         return cart.stream().mapToDouble(SaleLine::getSubtotal).sum();
     }
 
-    /** Makes sure a typed-in quantity is applied (and valid) before it is read. */
+    // Validates and clamps any manually typed spinner text into the 1–999 range before reading it
     private void commitQuantity() {
         try {
             int v = Integer.parseInt(quantity.getEditor().getText().trim());
@@ -171,11 +189,14 @@ public class SalesView extends View {
         quantity.getEditor().setText(String.valueOf(quantity.getValue()));
     }
 
+    // Validates available stock and adds or merges the selected product and quantity into the cart
     private void addToCart() {
         Product p = productTable.getSelectionModel().getSelectedItem();
         if (p == null) { Ui.info("Select a product", "Click a product in the list first."); return; }
         commitQuantity();
         int qty = quantity.getValue();
+
+        // Check existing cart quantity against available stock to prevent overselling
         int inCart = cart.stream().filter(l -> l.getProductId().equals(p.getId())).mapToInt(SaleLine::getQuantity).sum();
         int available = stockOf(p);
         if (available == 0) { Ui.error(p.getName() + " is out of stock."); return; }
@@ -184,12 +205,15 @@ public class SalesView extends View {
                     + (inCart > 0 ? " (" + inCart + " already in the cart)." : "."));
             return;
         }
+
+        // Replace any existing line for this product with the combined quantity and reset spinner
         cart.removeIf(l -> l.getProductId().equals(p.getId()));
         cart.add(new SaleLine(p, inCart + qty));
         quantity.getValueFactory().setValue(1);
         updateTotals();
     }
 
+    // Recalculates the total due and updates the change or shortfall message based on cash entered
     private void updateTotals() {
         double t = cartTotal();
         total.setText(Ui.money(t));
@@ -204,6 +228,7 @@ public class SalesView extends View {
         }
     }
 
+    // Empties the cart and resets customer and payment inputs for the next transaction
     private void clearCart() {
         cart.clear();
         cash.clear();
@@ -212,6 +237,7 @@ public class SalesView extends View {
         updateTotals();
     }
 
+    // Validates cash payment, records the sale transaction, displays the receipt, and resets the screen
     private void completeSale() {
         if (cart.isEmpty()) { Ui.error("Add at least one product to the cart first."); return; }
         Ui.attempt(() -> {
@@ -225,10 +251,12 @@ public class SalesView extends View {
         });
     }
 
+    // Formats the completed sale transaction into a printable receipt string
     private String receipt(SaleTransaction t) {
         return Ui.receiptText(t);
     }
 
+    // Reloads products and registered customers, prunes cart items exceeding updated stock, and recalculates totals
     @Override
     public void refresh() {
         catalog.setAll(system.getProducts());

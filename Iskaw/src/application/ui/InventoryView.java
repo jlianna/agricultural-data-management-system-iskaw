@@ -25,10 +25,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/** Inventory screen: everyone can check stock levels; only managers can restock. */
+// Inventory screen where everyone can check stock levels, while only managers can restock
 public class InventoryView extends View {
     private static final String ALL = "All categories";
 
+    // Core system references and UI components for displaying and filtering inventory
     private final ProductSystem system;
     private final User user;
     private final ObservableList<Product> items = FXCollections.observableArrayList();
@@ -41,34 +42,40 @@ public class InventoryView extends View {
     private final StatCard low = new StatCard("Low stock", "stat-butter");
     private final StatCard out = new StatCard("Out of stock", "stat-red");
 
+    // Initializes the inventory view layout, summary cards, search/filter bar, and product table
     public InventoryView(ProductSystem system, User user) {
         this.system = system;
         this.user = user;
         Inventory inv = system.getInventory();
 
+        // Arrange summary stat cards evenly across the top of the screen
         HBox cards = new HBox(16, total, healthy, low, out);
         for (StatCard c : new StatCard[]{total, healthy, low, out}) {
             HBox.setHgrow(c, Priority.ALWAYS);
             c.setMaxWidth(Double.MAX_VALUE);
         }
 
+        // Configure search input and category dropdown listeners to filter the table dynamically
         search.setPromptText("Search products…");
         search.setPrefWidth(240);
         category.setPrefWidth(180);
         search.textProperty().addListener((o, a, b) -> applyFilter());
         category.setOnAction(e -> applyFilter());
 
+        // Build toolbar and append the restock button only if the current user is a manager
         HBox tools = new HBox(12, search, category, Ui.spacer());
         tools.setAlignment(Pos.CENTER_LEFT);
         if (user.isManager()) tools.getChildren().add(Ui.button("Restock selected", "btn-accent", this::restock));
 
-        // ---- table
+        // Configure table resize behavior, empty placeholder, and standard product detail columns
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new javafx.scene.control.Label("No products match your search."));
         table.getColumns().add(Ui.column("Product", 190, Product::getName));
         table.getColumns().add(Ui.column("Category", 110, Product::getCategory));
         table.getColumns().add(Ui.column("Size", 70, Product::getUnit));
         table.getColumns().add(Ui.column("Description", 240, Product::getDescription));
+
+        // Add price and stock columns with custom numeric comparators for proper sorting
         TableColumn<Product, String> price = Ui.moneyColumn("Price", 80, p -> Ui.money(p.getPrice()));
         price.setComparator(Comparator.comparingDouble(s -> Double.parseDouble(s.replaceAll("[^0-9.]", ""))));
         table.getColumns().add(price);
@@ -76,8 +83,10 @@ public class InventoryView extends View {
         stock.setComparator(Comparator.comparingInt(Integer::parseInt));
         table.getColumns().add(stock);
 
+        // Configure the stock status column with styled badge graphics
         TableColumn<Product, String> status = Ui.column("Status", 100, p -> inv.statusOf(p.getId()));
         status.setCellFactory(col -> new TableCell<Product, String>() {
+            // Renders a color-coded status badge inside each non-empty table cell
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -92,11 +101,13 @@ public class InventoryView extends View {
         });
         table.getColumns().add(status);
 
+        // Wrap the filtered list in a sorted list bound to the table's sort order
         SortedList<Product> sorted = new SortedList<>(filtered);
         sorted.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sorted);
         VBox.setVgrow(table, Priority.ALWAYS);
 
+        // Set role-specific instructional subtitle and assemble all sections into the main layout
         String hint = user.isManager()
                 ? "Check stock levels and restock products."
                 : "Check stock levels before selling. Ask a manager to restock.";
@@ -106,6 +117,7 @@ public class InventoryView extends View {
         getChildren().addAll(titleRow, cards, tools, table);
     }
 
+    // Filters the visible product list based on the selected category and search query
     private void applyFilter() {
         String q = search.getText() == null ? "" : search.getText().trim().toLowerCase();
         String cat = category.getValue();
@@ -115,12 +127,16 @@ public class InventoryView extends View {
                         || p.getDescription().toLowerCase().contains(q)));
     }
 
+    // Prompts the manager to enter a restock quantity for the selected product and updates inventory
     private void restock() {
+        // Verify a product row is selected before opening the restock modal
         Product p = table.getSelectionModel().getSelectedItem();
         if (p == null) {
             Ui.info("Select a product", "Choose the product you want to restock first.");
             return;
         }
+
+        // Build the restock dialog form displaying current stock and an input field for added quantity
         TextField qty = new TextField();
         qty.setPromptText("e.g. 24");
         GridPane form = new GridPane();
@@ -131,11 +147,14 @@ public class InventoryView extends View {
         form.addRow(1, Ui.fieldLabel("Current stock"),
                 new javafx.scene.control.Label(String.valueOf(system.getInventory().getStock(p.getId()))));
         form.addRow(2, Ui.fieldLabel("Add quantity"), qty);
+
+        // Show the modal dialog and refresh the view if the restock operation succeeds
         boolean done = FormDialog.show("Restock " + p.getName(), "Restock", form,
                 () -> Ui.attempt(() -> system.restock(user, p, Ui.parseWhole(qty.getText(), "Quantity"))));
         if (done) refresh();
     }
 
+    // Reloads product data, updates category filters and summary stat cards, and refreshes the table
     @Override
     public void refresh() {
         Inventory inv = system.getInventory();

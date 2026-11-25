@@ -33,10 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * The customer's shop: browse products as picture tiles, add them to a cart and place an order.
- * The customer pays cash when picking the order up; a clerk then fulfils it.
- */
+// Customer storefront allowing users to browse product tiles, inspect details, manage a cart, and submit cash-on-pickup orders
 public class ShopView extends View {
     private static final String ALL = "All categories";
     private static final String SORT_DEFAULT = "Sort: Category";
@@ -45,6 +42,7 @@ public class ShopView extends View {
     private static final String SORT_NAME = "Name: A to Z";
     private static final double TILE_WIDTH = 190;
 
+    // Core system references, product grid controls, and active shopping cart state
     private final ProductSystem system;
     private final Customer customer;
     private final Navigator nav;
@@ -60,12 +58,14 @@ public class ShopView extends View {
     private final TableView<SaleLine> cartTable = new TableView<>();
     private final Label total = new Label();
 
+    // Initializes the shop layout with a banner, filterable product tile grid on the left, and shopping cart on the right
     public ShopView(ProductSystem system, Customer customer, Navigator nav) {
         this.system = system;
         this.customer = customer;
         this.nav = nav;
 
         // ------------------------------------------------ left: product tiles
+        // Configure search bar, category filter, and sort dropdown listeners to rebuild the grid dynamically
         search.setPromptText("Search products…  (click a product to see its details)");
         HBox.setHgrow(search, Priority.ALWAYS);
         category.setPrefWidth(170);
@@ -78,6 +78,7 @@ public class ShopView extends View {
         HBox tools = new HBox(10, search, category, sort);
         tools.setAlignment(Pos.CENTER_LEFT);
 
+        // Configure the scrollable FlowPane container for displaying product cards
         grid.setPadding(new Insets(4, 4, 8, 4));
         ScrollPane scroll = new ScrollPane(grid);
         scroll.setFitToWidth(true);
@@ -90,6 +91,7 @@ public class ShopView extends View {
         HBox.setHgrow(left, Priority.ALWAYS);
 
         // ------------------------------------------------ right: cart
+        // Configure the cart table columns for item name, quantity, and line subtotal
         cartTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         cartTable.setPlaceholder(new Label("Your cart is empty."));
         cartTable.getColumns().add(Ui.column("Item", 160, SaleLine::getProductName));
@@ -98,6 +100,7 @@ public class ShopView extends View {
         cartTable.setItems(cart);
         VBox.setVgrow(cartTable, Priority.ALWAYS);
 
+        // Configure cart management buttons, order total readout, and order submission button
         total.getStyleClass().add("total-label");
         HBox cartButtons = new HBox(8,
                 Ui.button("Remove item", "btn-danger", () -> {
@@ -116,6 +119,7 @@ public class ShopView extends View {
         right.setPrefWidth(340);
         right.setMinWidth(340);
 
+        // Assemble header, promotional banner, and two-column shop body into the root container
         HBox body = new HBox(16, left, right);
         VBox.setVgrow(body, Priority.ALWAYS);
         HBox titleRow = new HBox(14, Ui.heading("Iskaw Shop"),
@@ -135,9 +139,12 @@ public class ShopView extends View {
 
     // ---------------------------------------------------------------- tiles
 
+    // Filters and sorts the product catalogue according to current controls and repopulates the tile grid
     private void rebuildGrid() {
         String q = search.getText() == null ? "" : search.getText().trim().toLowerCase();
         String cat = category.getValue();
+
+        // Select the comparator matching the active sort option
         Comparator<Product> order;
         String s = sort.getValue();
         if (SORT_LOW.equals(s)) order = Comparator.comparingDouble(Product::getPrice);
@@ -145,6 +152,7 @@ public class ShopView extends View {
         else if (SORT_NAME.equals(s)) order = Comparator.comparing(Product::getName, String.CASE_INSENSITIVE_ORDER);
         else order = Comparator.comparing(Product::getCategory).thenComparing(Product::getName);
 
+        // Filter products by category and search text, then sort into the final display list
         List<Product> shown = products.stream()
                 .filter(p -> cat == null || ALL.equals(cat) || p.getCategory().equals(cat))
                 .filter(p -> q.isEmpty() || p.getName().toLowerCase().contains(q)
@@ -153,6 +161,7 @@ public class ShopView extends View {
                 .sorted(order)
                 .collect(Collectors.toList());
 
+        // Rebuild the FlowPane children and update the matching product count label
         grid.getChildren().clear();
         if (shown.isEmpty()) {
             grid.getChildren().add(new Label("No products match your search."));
@@ -161,11 +170,12 @@ public class ShopView extends View {
         resultCount.setText(shown.size() + (shown.size() == 1 ? " product" : " products"));
     }
 
-    //One product tile: picture, stock badge, category chip, name, size and price with a quick-add button.
+    // Builds an interactive product card with square photo, category/stock badges, price, and quick-add button
     private VBox tile(Product p) {
         Inventory inv = system.getInventory();
         int stock = inv.getStock(p.getId());
 
+        // Layer the category chip and optional low-stock or sold-out badge over the square product image
         StackPane picture = ProductImages.square(system, p, TILE_WIDTH - 2);
         StackPane overlay = new StackPane(picture);
         Label chip = new Label(p.getCategory());
@@ -184,6 +194,7 @@ public class ShopView extends View {
             overlay.getChildren().add(b);
         }
 
+        // Configure fixed-height product title, unit size, price label, and quick-add button
         Label name = new Label(p.getName());
         name.getStyleClass().add("tile-name");
         name.setWrapText(true);
@@ -206,6 +217,7 @@ public class ShopView extends View {
         priceRow.setAlignment(Pos.CENTER_LEFT);
         priceRow.setPadding(new Insets(0, 10, 0, 10));
 
+        // Assemble all card elements and bind click handlers to open the product detail modal
         VBox tile = new VBox(6, overlay, name, unit, priceRow);
         tile.getStyleClass().add("product-tile");
         tile.setPrefWidth(TILE_WIDTH);
@@ -219,10 +231,12 @@ public class ShopView extends View {
         return tile;
     }
 
+    // Displays a modal dialog showing full product details, stock status, and a quantity selector to add to cart
     private void showDetails(Product p) {
         Inventory inv = system.getInventory();
         int stock = inv.getStock(p.getId());
 
+        // Configure product title, price, description, and stock availability badge
         Label name = new Label(p.getName());
         name.getStyleClass().add("heading");
         name.setWrapText(true);
@@ -238,6 +252,7 @@ public class ShopView extends View {
         else if (inv.isLow(p.getId())) availability = Ui.badge("Only " + stock + " left", "badge-low");
         else availability = Ui.badge("Available (" + stock + " in stock)", "badge-ok");
 
+        // Configure the quantity spinner and disable it if the item is out of stock
         Spinner<Integer> qty = new Spinner<>();
         qty.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 99, 1));
         qty.setEditable(true);
@@ -246,12 +261,14 @@ public class ShopView extends View {
         qtyRow.setAlignment(Pos.CENTER_LEFT);
         qtyRow.setDisable(stock == 0);
 
+        // Combine enlarged product photo and detail column into the dialog pane
         VBox info = new VBox(10, name, Ui.badge(p.getCategory(), "badge-void"), price, description, availability, qtyRow);
         info.setPrefWidth(300);
 
         HBox content = new HBox(20, ProductImages.square(system, p, 260), info);
         content.setPadding(new Insets(6));
 
+        // Present the dialog and add the chosen quantity to the cart when confirmed
         ButtonType addType = new ButtonType("Add to cart", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(p.getName());
@@ -263,6 +280,7 @@ public class ShopView extends View {
         dialog.showAndWait().filter(b -> b == addType).ifPresent(b -> addToCart(p, readQuantity(qty)));
     }
 
+    // Parses and clamps the spinner's text input into a valid quantity between 1 and 99
     private static int readQuantity(Spinner<Integer> spinner) {
         try {
             int v = Integer.parseInt(spinner.getEditor().getText().trim());
@@ -274,6 +292,7 @@ public class ShopView extends View {
 
     // ---------------------------------------------------------------- cart
 
+    // Validates available inventory and adds or merges the specified product quantity into the customer's cart
     private void addToCart(Product p, int qty) {
         int inCart = cart.stream().filter(l -> l.getProductId().equals(p.getId())).mapToInt(SaleLine::getQuantity).sum();
         int available = system.getInventory().getStock(p.getId());
@@ -288,15 +307,18 @@ public class ShopView extends View {
         updateTotal();
     }
 
+    // Sums all cart line subtotals and updates the displayed order total
     private void updateTotal() {
         total.setText(Ui.money(cart.stream().mapToDouble(SaleLine::getSubtotal).sum()));
     }
 
+    // Removes all items from the cart and resets the displayed total
     private void clearCart() {
         cart.clear();
         updateTotal();
     }
 
+    // Submits the cart as a new customer order, displays pickup instructions, and navigates to the orders screen
     private void placeOrder() {
         if (cart.isEmpty()) { Ui.error("Your cart is empty. Add at least one product first."); 
         	return; 
@@ -311,6 +333,7 @@ public class ShopView extends View {
         });
     }
 
+    // Reloads products and categories, prunes cart items exceeding current stock, and rebuilds the product grid
     @Override
     public void refresh() {
         products.clear();
