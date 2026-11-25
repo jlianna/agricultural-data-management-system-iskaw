@@ -9,10 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-/**
- * A clerk's dashboard. Clerks see their own; a manager can open any clerk's dashboard
- * (in which case {@code readOnlyForManager} is true and a Back button is shown).
- */
+// Dashboard view for clerks, supporting both personal clerk mode and read-only manager inspection mode.
 public class ClerkDashboardView extends View {
     private final ProductSystem system;
     private final User subject;
@@ -23,6 +20,7 @@ public class ClerkDashboardView extends View {
     private final TransactionTable recent;
     private final LowStockPanel lowStock;
 
+    // Initializes the clerk dashboard layout, header actions, stat cards, and activity panels.
     public ClerkDashboardView(ProductSystem system, User viewer, User subject, Navigator nav, boolean readOnlyForManager) {
         this.system = system;
         this.subject = subject;
@@ -32,6 +30,7 @@ public class ClerkDashboardView extends View {
         HBox titleRow = new HBox(12);
         titleRow.setAlignment(Pos.CENTER_LEFT);
        
+        // Configure header controls depending on whether a manager or the clerk is viewing.
         if (readOnlyForManager) {
             titleRow.getChildren().addAll(
                     Ui.button("← Back", "btn-secondary", () -> nav.go("dashboard")),
@@ -45,16 +44,19 @@ public class ClerkDashboardView extends View {
                     Ui.button("Record donation", "btn-primary", () -> nav.go("wallet")));
         }
 
+        // Arrange the four summary KPI cards evenly across the top row.
         HBox cards = new HBox(16, sales, count, donations, voids);
         for (StatCard c : new StatCard[]{sales, count, donations, voids}) HBox.setHgrow(c, Priority.ALWAYS);
         for (StatCard c : new StatCard[]{sales, count, donations, voids}) c.setMaxWidth(Double.MAX_VALUE);
 
+        // Set up the main recent transactions card on the left.
         VBox recentCard = new VBox(10, Ui.sectionTitle(readOnlyForManager ? "Recent activity" : "My recent transactions"), recent);
         recentCard.getStyleClass().add("card");
         
         VBox.setVgrow(recent, Priority.ALWAYS);
         HBox.setHgrow(recentCard, Priority.ALWAYS);
 
+        // Set up the fixed-width low-stock alert panel on the right.
         lowStock.setPrefWidth(300);
         lowStock.setMinWidth(300);
         
@@ -65,11 +67,13 @@ public class ClerkDashboardView extends View {
         setPadding(new Insets(26, 30, 26, 30));
     }
 
+    // Extracts the first name from a user's full name for the welcome greeting.
     private static String firstName(String full) {
         int i = full.indexOf(' ');
         return i > 0 ? full.substring(0, i) : full;
     }
 
+    // Overridden method to reload clerk metrics, recent transactions, and low-stock items.
     @Override
     public void refresh() {
         Dashboard d = new Dashboard(system, subject);

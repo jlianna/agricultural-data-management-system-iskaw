@@ -16,10 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Main application frame: a sidebar (role-aware navigation) plus a content area that
- * swaps between {@link View}s. Managers see more menu items than clerks.
- */
+// Main application frame featuring a role-aware navigation sidebar and a swappable view content area
 public class Shell extends BorderPane implements Navigator {
     private final SceneManager scenes;
     private final User user;
@@ -27,10 +24,12 @@ public class Shell extends BorderPane implements Navigator {
     private final Map<String, View> views = new HashMap<>();
     private final Map<String, Button> navButtons = new LinkedHashMap<>();
 
+    // Initializes role-specific views, builds the navigation sidebar, and opens the default dashboard
     public Shell(SceneManager scenes, ProductSystem system, User user) {
         this.scenes = scenes;
         this.user = user;
 
+        // Register available screens according to whether the user is a customer, clerk, or manager
         if (user instanceof Customer) {
             // Customers only get their own dashboard and the read-only shop
             views.put("dashboard", new CustomerDashboardView(system, (Customer) user, this));
@@ -52,6 +51,7 @@ public class Shell extends BorderPane implements Navigator {
             }
         }
 
+        // Configure the sidebar container and top application brand header
         VBox sidebar = new VBox(6);
         sidebar.getStyleClass().add("sidebar");
 
@@ -64,6 +64,7 @@ public class Shell extends BorderPane implements Navigator {
         brandRow.setPadding(new Insets(0, 0, 18, 4));
         sidebar.getChildren().add(brandRow);
 
+        // Populate sidebar navigation links matching the user's role permissions
         addNav(sidebar, "dashboard", "Dashboard");
         if (user instanceof Customer) {
             addNav(sidebar, "shop", "Shop");
@@ -77,6 +78,7 @@ public class Shell extends BorderPane implements Navigator {
             if (user.isManager()) addNav(sidebar, "staff", "Accounts");
         }
 
+        // Create the bottom user profile badge and log-out button
         Label name = new Label(user.getFullName());
         name.getStyleClass().add("user-name");
         Label role = new Label(user.getRole());
@@ -88,11 +90,13 @@ public class Shell extends BorderPane implements Navigator {
 
         sidebar.getChildren().addAll(Ui.spacer(), chip, logout);
 
+        // Assemble the sidebar and main content pane, then navigate to the dashboard
         setLeft(sidebar);
         setCenter(content);
         go("dashboard");
     }
 
+    // Creates a styled navigation button, registers it by key, and appends it to the sidebar
     private void addNav(VBox sidebar, String key, String text) {
         Button b = new Button(text);
         b.getStyleClass().add("nav-button");
@@ -102,12 +106,14 @@ public class Shell extends BorderPane implements Navigator {
         sidebar.getChildren().add(b);
     }
 
+    // Switches the active view to the registered screen matching the given navigation key
     @Override
     public void go(String key) {
         View v = views.get(key);
         if (v != null) open(v, key);
     }
 
+    // Refreshes and displays the given view in the main content area and highlights its navigation button
     @Override
     public void open(View view, String navKey) {
         view.refresh();

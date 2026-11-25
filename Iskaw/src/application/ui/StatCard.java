@@ -3,11 +3,11 @@ package application.ui;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
-/** Reusable "caption + big number" tile used on dashboards and the wallet screen. */
+// Reusable summary tile displaying a caption label above a prominent metric value
 public class StatCard extends VBox {
     private final Label value = new Label();
 
-    /** @param accent one of stat-blue, stat-butter, stat-green, stat-red */
+    // Initializes the stat card with a descriptive caption and an accent color style class (stat-blue, stat-butter, stat-green, or stat-red)
     public StatCard(String caption, String accent) {
         getStyleClass().addAll("stat-card", accent);
         Label cap = new Label(caption);
@@ -16,6 +16,7 @@ public class StatCard extends VBox {
         getChildren().addAll(cap, value);
     }
 
+    // Updates the displayed metric value text
     public void setValue(String text) {
         value.setText(text);
     }

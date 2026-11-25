@@ -15,7 +15,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.Map;
 
-/** A customer's own dashboard: spending summary, purchase history and favourite products. */
+// Customer dashboard view displaying spending summary, purchase history, and top-bought items.
 public class CustomerDashboardView extends View {
     private final ProductSystem system;
     private final Customer customer;
@@ -27,6 +27,7 @@ public class CustomerDashboardView extends View {
     private final TableView<SaleTransaction> table = Ui.table("No purchases yet. Place an order in the Shop.");
     private final VBox favourites = new VBox(10);
 
+    // Initializes the customer dashboard header, summary cards, purchase table, and favorites sidebar.
     public CustomerDashboardView(ProductSystem system, Customer customer, Navigator nav) {
         this.system = system;
         this.customer = customer;
@@ -36,13 +37,14 @@ public class CustomerDashboardView extends View {
                 Ui.button("Shop now", "btn-accent", () -> nav.go("shop")));
         titleRow.setAlignment(Pos.CENTER_LEFT);
 
+        // Arrange the four customer summary KPI cards evenly across the top row.
         HBox cards = new HBox(16, spent, purchases, items, pending);
         for (StatCard c : new StatCard[]{spent, purchases, items, pending}) {
             HBox.setHgrow(c, Priority.ALWAYS);
             c.setMaxWidth(Double.MAX_VALUE);
         }
 
-        // ---- purchase history
+        // Configure purchase history table columns and row click/styling behavior.
         table.getColumns().add(Ui.column("Receipt", 70, SaleTransaction::getId));
         table.getColumns().add(Ui.column("Date", 135, t -> Ui.shortDateTime(t.getTimestamp())));
         table.getColumns().add(Ui.column("Items", 220, SaleTransaction::getDetails));
@@ -50,9 +52,9 @@ public class CustomerDashboardView extends View {
         table.getColumns().add(Ui.column("Status", 90, SaleTransaction::getStatus));
         VBox.setVgrow(table, Priority.ALWAYS);
         
-        
         table.setRowFactory(tv -> {
             javafx.scene.control.TableRow<SaleTransaction> row = new javafx.scene.control.TableRow<SaleTransaction>() {
+                // Overridden method to apply custom styling to voided transaction rows.
                 @Override
                 protected void updateItem(SaleTransaction t, boolean empty) {
                     super.updateItem(t, empty);
@@ -77,7 +79,7 @@ public class CustomerDashboardView extends View {
         historyCard.getStyleClass().add("card");
         HBox.setHgrow(historyCard, Priority.ALWAYS);
 
-        // ---- favourites
+        // Configure the fixed-width sidebar displaying top-purchased products.
         VBox favCard = new VBox(12, Ui.sectionTitle("My favourites"), favourites,
                 Ui.spacer(),
                 Ui.subtle("Order from the Shop, then pick it up and pay cash at the counter. "
@@ -93,15 +95,18 @@ public class CustomerDashboardView extends View {
         setPadding(new Insets(26, 30, 26, 30));
     }
 
+    // Extracts the first name from a customer's full name for the greeting header.
     private static String firstName(String full) {
         int i = full.indexOf(' ');
         return i > 0 ? full.substring(0, i) : full;
     }
 
+    // Displays a modal dialog containing the itemized receipt for a selected sale.
     private void showReceipt(SaleTransaction t) {
         Ui.info("Receipt " + t.getId() + (t.isVoided() ? " (voided)" : ""), Ui.receiptText(t));
     }
 
+    // Overridden method to reload customer spending metrics, purchase history, and top products.
     @Override
     public void refresh() {
         Dashboard d = Dashboard.forCustomer(system, customer);
@@ -110,9 +115,8 @@ public class CustomerDashboardView extends View {
         
         int units = 0;
         for (SaleTransaction t : d.getSalesHistory()) 
-        	if (!t.isVoided()) 
-        		units += t.getItemCount();
-        
+            if (!t.isVoided()) 
+                units += t.getItemCount();
         
         items.setValue(String.valueOf(units));
         

@@ -10,7 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-/** Manager-only screen for viewing staff and creating new clerk accounts. */
+// Manager-only screen for viewing registered user accounts and creating new clerk accounts
 public class StaffView extends View {
     private final ProductSystem system;
     private final User manager;
@@ -19,15 +19,18 @@ public class StaffView extends View {
     private final TextField username = new TextField();
     private final PasswordField password = new PasswordField();
 
+    // Initializes the accounts table on the left and the new clerk creation form on the right
     public StaffView(ProductSystem system, User manager) {
         this.system = system;
         this.manager = manager;
 
+        // Configure account table columns for full name, username, and role
         table.getColumns().add(Ui.column("Name", 180, User::getFullName));
         table.getColumns().add(Ui.column("Username", 120, User::getUsername));
         table.getColumns().add(Ui.column("Role", 90, User::getRole));
         VBox.setVgrow(table, Priority.ALWAYS);
 
+        // Configure input prompts and assemble the right-hand clerk registration form card
         fullName.setPromptText("e.g. Pedro Garcia");
         username.setPromptText("e.g. clerk3");
         password.setPromptText("At least 6 characters");
@@ -41,6 +44,7 @@ public class StaffView extends View {
         form.setPrefWidth(320);
         form.setMinWidth(320);
 
+        // Combine the header, accounts table, and registration form into the main layout
         HBox body = new HBox(16, table, form);
         HBox.setHgrow(table, Priority.ALWAYS);
         VBox.setVgrow(body, Priority.ALWAYS);
@@ -49,6 +53,7 @@ public class StaffView extends View {
         getChildren().addAll(titleRow, body);
     }
 
+    // Validates input fields, registers a new clerk account, clears the form, and refreshes the table
     private void addClerk() {
         Ui.attempt(() -> {
             system.addClerk(manager, username.getText(), fullName.getText(), password.getText());
@@ -59,6 +64,7 @@ public class StaffView extends View {
         });
     }
 
+    // Reloads all user accounts into the table
     @Override
     public void refresh() {
         table.getItems().setAll(system.getUsers());

@@ -23,20 +23,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Manager dashboard: business totals, per-clerk performance (with a way into each clerk's
- * dashboard), the sale history of all clerks, best sellers and stock alerts.
- */
+// Manager dashboard displaying business totals, clerk performance, sales history, best sellers, and stock alerts
 public class ManagerDashboardView extends View {
     private final ProductSystem system;
     private final User manager;
     private final Navigator nav;
 
+    // Summary stat cards for key cooperative financial and inventory metrics
     private final StatCard wallet = new StatCard("Wallet balance", "stat-green");
     private final StatCard sales = new StatCard("Total sales", "stat-blue");
     private final StatCard donations = new StatCard("Cash donations", "stat-butter");
     private final StatCard lowStock = new StatCard("Items low / out of stock", "stat-red");
 
+    // UI tables, filters, charts, and alert panels for monitoring operations
     private final TableView<Dashboard.ClerkSummary> clerkTable = Ui.table("No clerks yet.");
     private final TableView<SaleTransaction> historyTable = Ui.table("No sales recorded yet.");
     private final ComboBox<String> staffFilter = new ComboBox<>();
@@ -44,24 +43,27 @@ public class ManagerDashboardView extends View {
     private final LowStockPanel alerts;
     private List<User> filterUsers = new ArrayList<>();
 
+    // Constructs the manager dashboard layout and configures all tables, charts, and interactive controls
     public ManagerDashboardView(ProductSystem system, User manager, Navigator nav) {
         this.system = system;
         this.manager = manager;
         this.nav = nav;
         this.alerts = new LowStockPanel(system);
 
+        // Build the page header row
         Label title = Ui.heading("Manager dashboard");
         Label sub = Ui.subtle("Overview of the whole cooperative");
         HBox titleRow = new HBox(14, title, sub);
         titleRow.setAlignment(Pos.BOTTOM_LEFT);
 
+        // Arrange the top summary stat cards evenly across the full width
         HBox cards = new HBox(16, wallet, sales, donations, lowStock);
         for (StatCard c : new StatCard[]{wallet, sales, donations, lowStock}) {
             HBox.setHgrow(c, Priority.ALWAYS);
             c.setMaxWidth(Double.MAX_VALUE);
         }
 
-        // ---- clerk performance
+        // Configure clerk performance columns and enable double-click or button navigation into a clerk's dashboard
         clerkTable.getColumns().add(Ui.column("Clerk", 150, s -> s.getClerk().getFullName()));
         clerkTable.getColumns().add(Ui.moneyColumn("Sales", 55, s -> String.valueOf(s.getSalesCount())));
         clerkTable.getColumns().add(Ui.moneyColumn("Sales total", 100, s -> Ui.money(s.getSalesTotal())));
@@ -83,7 +85,7 @@ public class ManagerDashboardView extends View {
         VBox clerkCard = new VBox(10, Ui.sectionTitle("Clerk performance"), clerkTable, openClerk);
         clerkCard.getStyleClass().add("card");
 
-        // ---- best sellers chart
+        // Configure the horizontal bar chart displaying top-selling products
         chart.setLegendVisible(false);
         chart.setAnimated(false);
         chart.setPrefHeight(190);
@@ -92,6 +94,7 @@ public class ManagerDashboardView extends View {
         chartCard.getStyleClass().add("card");
         VBox.setVgrow(chart, Priority.ALWAYS);
 
+        // Combine the clerk performance card and best sellers chart into the upper split row
         VBox leftTop = new VBox(16, clerkCard);
         HBox.setHgrow(leftTop, Priority.ALWAYS);
         HBox.setHgrow(clerkCard, Priority.ALWAYS);
@@ -100,7 +103,7 @@ public class ManagerDashboardView extends View {
         leftTop.setPrefWidth(520);
         chartCard.setPrefWidth(400);
 
-        // ---- sale history
+        // Configure the sale history table columns and staff filter dropdown
         historyTable.getColumns().add(Ui.column("Date", 135, t -> Ui.shortDateTime(t.getTimestamp())));
         historyTable.getColumns().add(Ui.column("Clerk", 110, t -> system.displayName(t.getRecordedBy())));
         historyTable.getColumns().add(Ui.column("Customer", 100, SaleTransaction::getParty));
@@ -116,25 +119,30 @@ public class ManagerDashboardView extends View {
         VBox.setVgrow(historyTable, Priority.ALWAYS);
         HBox.setHgrow(historyCard, Priority.ALWAYS);
 
+        // Place the sale history card alongside the fixed-width low stock alerts panel in the bottom row
         alerts.setPrefWidth(250);
         alerts.setMinWidth(250);
         HBox bottom = new HBox(16, historyCard, alerts);
         VBox.setVgrow(bottom, Priority.ALWAYS);
 
+        // Add all dashboard sections into the root container
         getChildren().addAll(titleRow, cards, top, bottom);
     }
 
+    // Navigates to the individual dashboard view for the selected clerk
     private void openClerk(Clerk clerk) {
         ClerkDashboardView v = new ClerkDashboardView(system, manager, clerk, nav, true);
         nav.open(v, "dashboard");
     }
 
+    // Populates the sale history table filtered by the currently selected staff member
     private void loadHistory() {
         int i = staffFilter.getSelectionModel().getSelectedIndex();
         Dashboard d = new Dashboard(system, i <= 0 || i > filterUsers.size() ? null : filterUsers.get(i - 1));
         historyTable.getItems().setAll(d.getSalesHistory());
     }
 
+    // Reloads all business metrics, clerk summaries, best sellers chart, staff filter options, and stock alerts
     @Override
     public void refresh() {
         Dashboard all = new Dashboard(system, null);

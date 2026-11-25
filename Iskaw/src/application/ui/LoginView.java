@@ -17,14 +17,14 @@ import javafx.scene.layout.VBox;
 
 import java.util.function.Consumer;
 
-//Welcome 
-// login screen.
+// Welcome and login screen that handles user authentication and new customer registration
 public class LoginView extends StackPane {
 
+    // Builds the split login interface with branding on the left and the sign-in form on the right
     public LoginView(ProductSystem system, Consumer<User> onLogin) {
         getStyleClass().add("login-bg");
 
-        //left: welcome message
+        // Configure the left branding panel with the application logo, tagline, and summary
         Label tagline = new Label("Cow Made Better");
         tagline.getStyleClass().add("tagline-text");
         Label sub = new Label("Iskaw helps manage dairy, beef, cowhide products, stock,\nsales and customer orders in one place.");
@@ -36,7 +36,7 @@ public class LoginView extends StackPane {
         welcome.setAlignment(Pos.CENTER_LEFT);
         welcome.setPadding(new Insets(0, 40, 0, 0));
 
-        //right: login card
+        // Initialize the right login card headers and credential input fields
         Label title = new Label("Welcome back");
         title.getStyleClass().add("login-title");
         Label prompt = Ui.subtle("Sign in to continue");
@@ -50,6 +50,7 @@ public class LoginView extends StackPane {
         error.getStyleClass().add("error-text");
         error.setWrapText(true);
 
+        // Define the login submission action to authenticate credentials or display validation errors
         Runnable submit = () -> {
             try {
                 User u = system.login(username.getText(), password.getText());
@@ -62,6 +63,8 @@ public class LoginView extends StackPane {
                 password.requestFocus();
             }
         };
+
+        // Configure the primary sign-in button and secondary customer registration button
         Button signIn = Ui.button("Sign in", "btn-primary", submit);
         signIn.setMaxWidth(Double.MAX_VALUE);
         signIn.setDefaultButton(true);
@@ -70,28 +73,33 @@ public class LoginView extends StackPane {
                 () -> showSignUp(system, username));
         signUp.setMaxWidth(Double.MAX_VALUE);
 
+        // Create the demo credentials reference box for testing different user roles
         Label hint = new Label("Demo accounts\nManager:    manager / manager123\nClerk:        clerk1 / clerk123\nCustomer:  customer1 / customer123");
         hint.getStyleClass().add("subtle");
         VBox hintBox = new VBox(hint);
         hintBox.getStyleClass().add("hint-box");
 
+        // Assemble all form controls into the login card container
         VBox card = new VBox(12, title, prompt, 
         		Ui.fieldLabel("USERNAME"), username,
                 Ui.fieldLabel("PASSWORD"), password, 
                 error, signIn, signUp, hintBox);
         card.getStyleClass().add("login-card");
 
+        // Display any startup warning message if one was flagged by the system
         if (system.getStartupWarning() != null) 
         	error.setText(system.getStartupWarning());
 
+        // Center the branding panel and login card side-by-side in the root StackPane
         HBox layout = new HBox(30, welcome, card);
         layout.setAlignment(Pos.CENTER);
         layout.setFillHeight(false);
         getChildren().add(layout);
     }
 
-    //Customer self sign-up dialog. On success the new username is pre-filled on the login form.
+    // Opens the customer self sign-up modal dialog and pre-fills the username on successful registration
     private void showSignUp(ProductSystem system, TextField loginUsername) {
+        // Initialize registration input fields with helpful prompts
         TextField fullName = new TextField();
         fullName.setPromptText("e.g. Aaron Cale");
         
@@ -104,6 +112,7 @@ public class LoginView extends StackPane {
         PasswordField confirm = new PasswordField();
         confirm.setPromptText("Type it again");
 
+        // Arrange registration labels and inputs into a structured grid layout
         GridPane g = new GridPane();
         g.setHgap(12);
         g.setVgap(10);
@@ -113,12 +122,15 @@ public class LoginView extends StackPane {
         g.addRow(2, Ui.fieldLabel("Password"), pass);
         g.addRow(3, Ui.fieldLabel("Confirm password"), confirm);
 
+        // Display the dialog and validate password matching before registering the new customer
         boolean created = FormDialog.show("Create a customer account", "Create account", g, () ->
                 Ui.attempt(() -> {
                     if (!pass.getText().equals(confirm.getText()))
                         throw new IllegalArgumentException("The two passwords do not match.");
                     system.registerCustomer(user.getText(), fullName.getText(), pass.getText());
                 }));
+
+        // Populate the login username field and notify the user if registration succeeded
         if (created) {
             loginUsername.setText(user.getText().trim().toLowerCase());
             Ui.info("Account created", "You can now sign in with your new username and password.");
