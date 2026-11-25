@@ -73,7 +73,7 @@ public class ProductSystem {
                 store = loadFromFiles();
                 // Add the new Iskaw products to older saved files as well
                 // This will keep the products available even if the user already has saved data
-                addIskawProductsIfMissing();
+                addIskawProductsBeefCowhide();
                 attachDefaultImages();
                 save();
                 return;

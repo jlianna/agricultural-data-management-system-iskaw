@@ -122,9 +122,8 @@ public class ShopView extends View {
                 Ui.subtle("Dairy, beef, and cowhide products from Iskaw."));
         titleRow.setAlignment(Pos.BOTTOM_LEFT);
 
-        // This is only a temporary banner image until the actual product photos are added
         ImageView productBanner = new ImageView(new Image(
-                getClass().getResourceAsStream("/application/images/iskaw-products-placeholder.png")));
+        		getClass().getResource("iskaw-products-banner.png").toExternalForm()));
         productBanner.setFitHeight(110);
         productBanner.setFitWidth(900);
         productBanner.setPreserveRatio(false);
@@ -162,7 +161,7 @@ public class ShopView extends View {
         resultCount.setText(shown.size() + (shown.size() == 1 ? " product" : " products"));
     }
 
-    /** One product tile: picture, stock badge, category chip, name, size and price with a quick-add button. */
+    //One product tile: picture, stock badge, category chip, name, size and price with a quick-add button.
     private VBox tile(Product p) {
         Inventory inv = system.getInventory();
         int stock = inv.getStock(p.getId());
@@ -299,7 +298,10 @@ public class ShopView extends View {
     }
 
     private void placeOrder() {
-        if (cart.isEmpty()) { Ui.error("Your cart is empty. Add at least one product first."); return; }
+        if (cart.isEmpty()) { Ui.error("Your cart is empty. Add at least one product first."); 
+        	return; 
+        }
+        
         Ui.attempt(() -> {
             Order o = system.placeOrder(customer, new ArrayList<>(cart));
             clearCart();
