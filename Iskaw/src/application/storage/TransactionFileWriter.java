@@ -27,7 +27,7 @@ public class TransactionFileWriter {
             } else if (t instanceof ItemDonation) {
                 ItemDonation d = (ItemDonation) t;
                 common[0] = "ITEM_DONATION";
-                specific = new Object[] {d.getParty(), d.getProductId(), d.getProductName(), d.getQuantity()};
+                specific = new Object[] {d.getParty(), d.getItemName(), d.getQuantity(), d.getNotes()};
             } else {
                 throw new IllegalStateException("Unknown transaction class " + t.getClass().getName());
             }

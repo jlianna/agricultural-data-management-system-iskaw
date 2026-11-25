@@ -35,7 +35,14 @@ public class TransactionFileReader {
                         t = new CashDonation(f[1], f[3], f[7], Double.parseDouble(f[8]));
                         break;
                     case "ITEM_DONATION":
-                        t = new ItemDonation(f[1], f[3], f[7], f[8], f[9], Integer.parseInt(f[10]));
+                        if (f.length >= 11 && f[10].matches("\\d+")) {
+                            // Legacy format: donor|productId|productName|quantity
+                            t = new ItemDonation(f[1], f[3], f[7], f[9], Integer.parseInt(f[10]), "");
+                        } else {
+                            // Current format: donor|itemName|quantity|notes
+                            String notes = f.length > 10 ? f[10] : "";
+                            t = new ItemDonation(f[1], f[3], f[7], f[8], Integer.parseInt(f[9]), notes);
+                        }
                         break;
                     default:
                         throw new IllegalArgumentException("unknown transaction type " + f[0]);

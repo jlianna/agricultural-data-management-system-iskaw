@@ -94,22 +94,35 @@ public class WalletView extends View {
         if (saved) refresh();
     }
 
-    // Opens a modal dialog to record donated product inventory and refreshes the screen upon saving
+    // Opens a modal dialog to record a custom donated item for charity without adding to business inventory
     private void recordItemDonation() {
         TextField donor = new TextField();
         donor.setPromptText("Anonymous");
-        ComboBox<Product> product = new ComboBox<>(FXCollections.observableArrayList(system.getProducts()));
-        product.setPromptText("Choose a product");
-        product.setPrefWidth(260);
+
+        TextField itemName = new TextField();
+        itemName.setPromptText("e.g. Canned Goods, Winter Jackets, Rice");
+        itemName.setPrefWidth(260);
+
         TextField qty = new TextField();
         qty.setPromptText("e.g. 12");
+
+        TextField details = new TextField();
+        details.setPromptText("e.g. 5 kg sacks, unopened, for orphanage");
+
         GridPane g = form();
         g.addRow(0, Ui.fieldLabel("Donor name"), donor);
-        g.addRow(1, Ui.fieldLabel("Product"), product);
+        g.addRow(1, Ui.fieldLabel("Item donated"), itemName);
         g.addRow(2, Ui.fieldLabel("Quantity"), qty);
+        g.addRow(3, Ui.fieldLabel("Notes / details"), details);
+
         boolean saved = FormDialog.show("Record item donation", "Save donation", g, () ->
-                Ui.attempt(() -> system.recordItemDonation(user, donor.getText(), product.getValue(),
-                        Ui.parseWhole(qty.getText(), "Quantity"))));
+                Ui.attempt(() -> system.recordItemDonation(
+                        user,
+                        donor.getText(),
+                        itemName.getText(),
+                        Ui.parseWhole(qty.getText(), "Quantity"),
+                        details.getText()
+                )));
         if (saved) refresh();
     }
 

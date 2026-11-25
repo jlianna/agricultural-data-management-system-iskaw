@@ -9,6 +9,8 @@ import application.storage.SaleLineFileReader;
 import application.storage.SaleLineFileWriter;
 import application.storage.TransactionFileReader;
 import application.storage.TransactionFileWriter;
+import application.storage.CharityDonationFileReader;
+import application.storage.CharityDonationFileWriter;
 import application.storage.UserFileReader;
 import application.storage.UserFileWriter;
 import java.io.IOException;
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
 public class ProductSystem {
 
     // In-memory state container holding all application entities and ID counters.
-    static class Store {
+	static class Store {
         private static final long serialVersionUID = 1L;
         final List<User> users = new ArrayList<>();
         final List<Product> products = new ArrayList<>();
@@ -37,6 +39,7 @@ public class ProductSystem {
         int transactionCounter = 0;
         List<Order> orders = new ArrayList<>();
         int orderCounter = 0;
+        final List<ItemDonation> charityDonations = new ArrayList<>();
     }
 
     private final DataFiles files;
@@ -85,7 +88,7 @@ public class ProductSystem {
         save();
     }
 
-    // Reads all entity records from storage text files into a new Store instance.
+ // Reads all entity records from storage text files into a new Store instance.
     private Store loadFromFiles() throws IOException {
         Store s = new Store();
         s.users.addAll(UserFileReader.read(files.users()));
@@ -95,9 +98,23 @@ public class ProductSystem {
         
         s.transactions.addAll(TransactionFileReader.read(files.transactions(), lines));
         s.orders.addAll(OrderFileReader.read(files.orders(), lines));
+        s.charityDonations.addAll(CharityDonationFileReader.read(files.charityDonations()));
+
+        // Migrate any existing ItemDonation records from transactions.txt into charityDonations
+        java.util.Set<String> existingCharityIds = s.charityDonations.stream()
+                .map(ItemDonation::getId)
+                .collect(Collectors.toSet());
+        for (Transaction t : s.transactions) {
+            if (t instanceof ItemDonation && !existingCharityIds.contains(t.getId())) {
+                s.charityDonations.add((ItemDonation) t);
+            }
+        }
         
         // Resume ID counters above the highest existing numeric ID suffix.
-        s.transactionCounter = highest(s.transactions.stream().map(Transaction::getId).collect(Collectors.toList()));
+        List<String> allTxIds = new ArrayList<>();
+        s.transactions.forEach(t -> allTxIds.add(t.getId()));
+        s.charityDonations.forEach(d -> allTxIds.add(d.getId()));
+        s.transactionCounter = highest(allTxIds);
         s.orderCounter = highest(s.orders.stream().map(Order::getId).collect(Collectors.toList()));
         return s;
     }
@@ -473,12 +490,24 @@ public class ProductSystem {
         return commit(new CashDonation(nextTransactionId(), actor.getUsername(), donor, amount));
     }
 
-    // Records an in-kind product donation and adds the donated quantity to inventory.
-    public synchronized ItemDonation recordItemDonation(User actor, String donor, Product product, int quantity) {
+    // Records a custom in-kind donation earmarked for charity without modifying business stock.
+    public synchronized ItemDonation recordItemDonation(User actor, String donor, String itemName,
+                                                        int quantity, String notes) {
         requireStaff(actor, "record donations");
-        ItemDonation t = new ItemDonation(nextTransactionId(), actor.getUsername(), donor, product, quantity);
-        t.applyTo(store.inventory);
-        return commit(t);
+        ItemDonation donation = new ItemDonation(nextTransactionId(), actor.getUsername(), donor, itemName, quantity, notes);
+        store.charityDonations.add(donation);
+        // Also add to store.transactions ONLY if you still want it visible in the Cash & Transactions table:
+        store.transactionCounter++;
+        store.transactions.add(donation);
+        save();
+        return donation;
+    }
+
+    // Getter for all donated charity items ordered newest first.
+    public List<ItemDonation> getCharityDonations() {
+        List<ItemDonation> copy = new ArrayList<>(store.charityDonations);
+        Collections.reverse(copy);
+        return copy;
     }
 
     // Voids a transaction, reverses its inventory adjustments, and saves changes.
@@ -592,6 +621,40 @@ public class ProductSystem {
         }
 
         store.users.remove(target);
+        save();
+    }
+    
+ // Allows a manager to dispatch selected donated items and quantities to a charity with notes.
+    public synchronized void donateItemsToCharity(User actor, java.util.Map<ItemDonation, Integer> itemsAndQuantities,
+                                                    String charityName, String notes) {
+        requireManager(actor, "donate items to charity");
+        if (itemsAndQuantities == null || itemsAndQuantities.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one donated item to send to charity.");
+        }
+        if (charityName == null || charityName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Please enter the recipient charity or organization.");
+        }
+
+        String noteEntry = "To " + charityName.trim()
+                + ((notes != null && !notes.trim().isEmpty()) ? " (" + notes.trim() + ")" : "");
+
+        // Validate all quantities first before mutating state
+        for (java.util.Map.Entry<ItemDonation, Integer> entry : itemsAndQuantities.entrySet()) {
+            ItemDonation item = entry.getKey();
+            int qty = entry.getValue();
+            if (item.isVoided()) {
+                throw new IllegalArgumentException("Cannot donate voided item " + item.getId() + ".");
+            }
+            if (qty <= 0 || qty > item.getRemainingQuantity()) {
+                throw new IllegalArgumentException("Invalid quantity for \"" + item.getItemName()
+                        + "\" (available: " + item.getRemainingQuantity() + ").");
+            }
+        }
+
+        // Apply distribution quantities and save
+        for (java.util.Map.Entry<ItemDonation, Integer> entry : itemsAndQuantities.entrySet()) {
+            entry.getKey().donateToCharity(entry.getValue(), noteEntry);
+        }
         save();
     }
 }

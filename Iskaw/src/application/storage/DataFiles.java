@@ -47,6 +47,11 @@ public class DataFiles {
     	return dir.resolve("images"); 
     }
     
+    // charity donations
+    public Path charityDonations() {
+        return dir.resolve("charity_donations.txt");
+    }
+    
     //True when a saved copy already exists in the folder. 
     public boolean exists() {
         return Files.exists(users()) || Files.exists(products());

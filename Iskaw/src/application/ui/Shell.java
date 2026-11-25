@@ -47,6 +47,7 @@ public class Shell extends BorderPane implements Navigator {
             // Manager-only screens
             if (user.isManager()) {
                 views.put("products", new ProductsView(system, user));
+                views.put("charity", new CharityView(system, user));
                 views.put("staff", new StaffView(system, user));
             }
         }
@@ -75,6 +76,7 @@ public class Shell extends BorderPane implements Navigator {
             addNav(sidebar, "inventory", "Inventory");
             if (user.isManager()) addNav(sidebar, "products", "Products");
             addNav(sidebar, "wallet", "Cash & Transactions");
+            if (user.isManager()) addNav(sidebar, "charity", "Charity Donations");
             if (user.isManager()) addNav(sidebar, "staff", "Accounts");
         }
 
