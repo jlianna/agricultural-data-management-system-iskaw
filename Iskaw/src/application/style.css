@@ -131,8 +131,18 @@
 	-fx-background-color: white; -fx-text-fill: -dh-red; 
 	-fx-border-color: #e3b1ab; -fx-border-radius: 8;
 }
-.btn-danger:hover { 
-	-fx-background-color: #fbeceb;
+/* Danger / Delete button hover and click states */
+.btn-danger:hover {
+    -fx-background-color: #c62828;
+    -fx-border-color: #c62828;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.btn-danger:pressed {
+    -fx-background-color: #8e0000;
+    -fx-border-color: #8e0000;
+    -fx-text-fill: white;
 }
 .button:disabled { 
 	-fx-opacity: 0.45;

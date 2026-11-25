@@ -577,4 +577,21 @@ public class ProductSystem {
     public double getWalletBalance() {
         return store.transactions.stream().filter(t -> !t.isVoided()).mapToDouble(Transaction::getCashAmount).sum();
     }
+    
+    // Deletes a clerk or customer account (managers cannot delete themselves or other managers).
+    public synchronized void deleteUser(User actor, User target) {
+        requireManager(actor, "delete accounts");
+        if (target == null) {
+            throw new IllegalArgumentException("Select an account to delete.");
+        }
+        if (target.getUsername().equals(actor.getUsername())) {
+            throw new IllegalArgumentException("You cannot delete your own account while logged in.");
+        }
+        if (target.isManager()) {
+            throw new IllegalArgumentException("Manager accounts cannot be deleted.");
+        }
+
+        store.users.remove(target);
+        save();
+    }
 }
