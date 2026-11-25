@@ -161,7 +161,7 @@ public class ProductSystem {
         addSeed("Fresh Cow's Milk", "Farm-fresh whole cow's milk, pasteurized.", "Milk", "1 L", 85, 55);
         addSeed("Chocolate Milk", "Low-sugar chocolate drink made with fresh milk.", "Milk", "250 ml", 35, 70);
         addSeed("Kesong Puti", "Soft, lightly salted white cheese made from carabao milk.", "Cheese", "200 g", 120, 18);
-        addSeed("Carabao Mozzarella", "Stretchy mozzarella, great for pizza and baking.", "Cheese", "250 g", 210, 9);
+        addSeed("Mozzarella Cheese", "Stretchy mozzarella, great for pizza and baking.", "Cheese", "250 g", 210, 9);
         addSeed("Cream Cheese", "Smooth spreadable cream cheese.", "Cheese", "150 g", 130, 22);
         addSeed("Plain Yogurt", "Thick, unsweetened yogurt with live cultures.", "Yogurt", "500 g", 110, 30);
         addSeed("Strawberry Yogurt Drink", "Drinkable yogurt blended with real strawberries.", "Yogurt", "250 ml", 45, 6);
