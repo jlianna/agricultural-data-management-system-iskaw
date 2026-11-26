@@ -1,13 +1,11 @@
 package application.model;
 
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 //Base class of all system users. Passwords are stored as SHA-256 hashes.
-public abstract class User implements Serializable {
-    private static final long serialVersionUID = 1L;
+public abstract class User{
 
     private final String username;
     private final String fullName;
@@ -34,7 +32,7 @@ public abstract class User implements Serializable {
     }
 
     public String getUsername() { return username; }
-    /** The stored SHA-256 hash (used by the storage package; never the password itself). */
+    //The stored  hash used by the storage package; never the password itself
     public String getPasswordHash() { return passwordHash; }
     public String getFullName() { return fullName; }
 
@@ -45,7 +43,7 @@ public abstract class User implements Serializable {
     //Human readable role name, e.g. "Manager".
     public abstract String getRole();
 
-    //Managers have full read/write access; clerks have restricted access.
+    //Managers have full read/write access clerks have restricted access.
     public abstract boolean isManager();
 
     //Staff (managers and clerks) may record transactions; customers may not.

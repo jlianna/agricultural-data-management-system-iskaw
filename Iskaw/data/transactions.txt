@@ -1,2 +1,8 @@
 # Iskaw transactions: type|id|time|recorded by|voided|voided by|voided at|...
 SALE|T-00001|2026-11-23T19:08:20.985390|manager|false|\N|\N|Rosa Mendoza|customer1|1560.0
+SALE|T-00002|2026-11-26T00:08:10.395861700|clerk1|false|\N|\N|aaron cale|aaron|5175.0
+SALE|T-00003|2026-11-26T00:11:12.609315|manager|false|\N|\N|wa|\N|450.0
+SALE|T-00004|2026-11-26T00:15:45.730553100|clerk1|false|\N|\N|Pau Buenaventura|awpaw|300.0
+SALE|T-00005|2026-11-26T00:17:01.255790400|clerk2|false|\N|\N|Walk-in customer|\N|1200.0
+CASH_DONATION|T-00006|2026-11-26T00:48:31.324319500|manager|false|\N|\N|Anonymous|100.0
+ITEM_DONATION|T-00007|2026-11-26T00:54:53.927023300|manager|false|\N|\N|Anonymous|Strawberry Yogurt Drink|5|

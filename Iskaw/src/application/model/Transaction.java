@@ -1,13 +1,11 @@
 package application.model;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
 //Base class for every recorded transaction (sale, cash donation, item donation).
 //Subclasses define how they affect inventory and the cash wallet (polymorphism).
-public abstract class Transaction implements Serializable {
-    private static final long serialVersionUID = 1L;
+public abstract class Transaction {
 
     private final String id;
     private LocalDateTime timestamp;

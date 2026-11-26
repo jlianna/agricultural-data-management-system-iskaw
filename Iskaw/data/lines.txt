@@ -1,5 +1,21 @@
 # Iskaw sale/order items: owner id|product id|product name|quantity|price paid
 T-00001|P-1B6E44E6|Beef Shank|1|420.0
 T-00001|P-9C61F92B|Brisket with Bones|3|380.0
+T-00002|P-B8DA3671|Strawberry Yogurt Drink|5|45.0
+T-00002|P-13154CAB|Coupon - Cognac|3|1500.0
+T-00002|P-09E1FA50|Salted Butter|3|150.0
+T-00003|P-5988009B|Pastillas de Leche|3|60.0
+T-00003|P-286B23F0|Ube Ice Cream|1|260.0
+T-00004|P-B8DA3671|Strawberry Yogurt Drink|1|45.0
+T-00004|P-A4BEA6E7|Plain Yogurt|1|110.0
+T-00004|P-5988009B|Pastillas de Leche|1|60.0
+T-00005|P-37676866|Beef Cubes|1|450.0
+T-00005|P-6D08E7F0|Beef Offal|1|280.0
+T-00005|P-A8C7146A|Beef Plate|1|420.0
 O-00001|P-1B6E44E6|Beef Shank|1|420.0
 O-00001|P-9C61F92B|Brisket with Bones|3|380.0
+O-00002|P-B8DA3671|Strawberry Yogurt Drink|5|45.0
+O-00002|P-13154CAB|Coupon - Cognac|3|1500.0
+O-00002|P-09E1FA50|Salted Butter|3|150.0
+O-00003|P-B8DA3671|Strawberry Yogurt Drink|4|45.0
+O-00004|P-81938400|Mozzarella Cheese|1|210.0

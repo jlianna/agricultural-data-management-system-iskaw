@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 //A customer purchase paid in cash.
 public class SaleTransaction extends Transaction {
-    private static final long serialVersionUID = 1L;
 
     private final String customer;
     //Username of the registered customer this sale belongs to, or null for walk-ins.

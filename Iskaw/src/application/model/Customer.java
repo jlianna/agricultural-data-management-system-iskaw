@@ -3,7 +3,6 @@ package application.model;
 
 
 public class Customer extends User {
-   private static final long serialVersionUID = 1L;
 
 
 	//Constructor for Customer
