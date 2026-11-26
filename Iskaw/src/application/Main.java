@@ -5,7 +5,7 @@ import application.ui.SceneManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-/** Entry point of Iskaw. */
+// Entry point of Iskaw. 
 public class Main extends Application {
     private ProductSystem system;
 

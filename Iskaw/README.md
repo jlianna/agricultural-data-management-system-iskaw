@@ -1,114 +1,163 @@
-# Iskaw – Cattle, Dairy, Beef and Cowhide Products
+# Iskaw — Agricultural Data Management System
 
-JavaFX application for the **Iskaw** (a cattle-based business that sells dairy products, beef cuts, and cowhide products,
-butter, ice cream and milk sweets). It covers the four required modules in one program:
+**Iskaw** is a JavaFX desktop Point-of-Sale (POS), Inventory, Order Fulfillment, and Charity Donation Management System built for agricultural enterprises handling **Dairy**, **Beef**, and **Cowhide** products.
 
-| Module | Where |
-|---|---|
-| Sales management | **New Sale / Record Sale** screen (point-of-sale with cart, cash, change, receipt) |
-| Inventory management | **Inventory** screen (stock levels, low/out-of-stock badges, manager restock) |
-| Product management | **Products** screen (manager: add / edit / delete products) |
-| Cash / donation transactions | **Cash & Transactions** screen (wallet balance, cash donations, item donations, history, void) |
+> **Important Repository Note:**  
+> The active and complete application codebase is located exclusively on the **`demo-dairyhub`** branch inside the **`Iskaw/`** folder (`agricultural-data-management-system-iskaw/Iskaw`). Please ignore older prototype folders (`DairyHub`, `DemoPt2/DairyHub`, and `DemoPt2.zip`) when importing or running the project.
 
-## Run it in Eclipse (same setup as the lab template)
+---
 
-1. **File → Import → General → Existing Projects into Workspace**, pick this folder (or the zip), **Finish**.
-2. The project uses the same `JavaFX21` user library as the lab template. If Eclipse shows red errors about
-   `javafx`, open **Project → Properties → Java Build Path → Libraries** and make sure `JavaFX21` is present
-   (Window → Preferences → Java → Build Path → User Libraries if it is missing).
-3. Right-click `src/application/Main.java` → **Run As → Java Application**.
-4. To rename the project to your team name: right-click it → **Refactor → Rename** (F2).
+## Project Team
 
-## Demo accounts
+**University of the Philippines Los Baños (UPLB)**  
+**Course & Section:** CMSC 22 – CD-4L
+
+* **Julliana Imperial**
+* **Pauleen Buenaventura**
+* **Aaron Cohen Cale**
+
+---
+
+## Table of Contents
+1. [Features Overview](#features-overview)
+2. [How to Run in Eclipse](#how-to-run-in-eclipse)
+3. [Default Login Credentials](#default-login-credentials)
+4. [User Manual](#user-manual)
+   * [Customer Guide](#1-customer-guide)
+   * [Clerk Guide](#2-clerk-guide)
+   * [Manager Guide](#3-manager-guide)
+5. [Project Structure](#project-structure)
+
+---
+
+## Features Overview
+
+* **Role-Based Access Control (RBAC):** Dedicated interfaces and permissions for **Customers**, **Clerks**, and **Managers**.
+* **Point-of-Sale (POS) & Order Fulfillment:** Walk-in retail sales and customer pre-orders with automatic stock validation, cash change calculation, and receipt/transaction logging.
+* **Inventory & Product Catalog Management:** Real-time stock tracking across Dairy, Beef, and Cowhide categories, low-stock alerts, product image uploads, and restocking controls.
+* **Dual-Track Cash & Charity Management:**
+  * **Cash Donations:** Added directly to the store's net wallet balance.
+  * **In-Kind Charity Donations:** Stored in a separate charity pool (`charity_donations.txt`) so community donations never interfere with commercial stock, complete with a **Charity Dispatch** workflow and audit history.
+* **Resilient Local Persistence:** Pipe-delimited flat-file storage (`Iskaw/data/`) with automatic backup recovery if data files are damaged.
+
+---
+
+## How to Run in Eclipse
+
+### Prerequisites
+* **Java Development Kit (JDK):** Java 11 or higher (Java 17 recommended).
+* **IDE:** Eclipse IDE for Java Developers.
+* **JavaFX SDK:** JavaFX SDK matching your JDK version (e.g., JavaFX 17 or 21), or the **e(fx)clipse** plugin installed in Eclipse.
+
+### Step 1: Clone the Repository and Switch to `demo-dairyhub`
+Open a terminal (or Git Bash) and clone the `demo-dairyhub` branch directly:
+
+    git clone -b demo-dairyhub https://github.com/jlianna/agricultural-data-management-system-iskaw.git
+
+*(If you already cloned the repository on another branch, switch to it using `git checkout demo-dairyhub`.)*
+
+### Step 2: Import Only the `Iskaw` Folder into Eclipse
+1. Open **Eclipse**.
+2. Go to **File → Import... → General → Existing Projects into Workspace** and click **Next**.
+3. Next to **Select root directory**, click **Browse...** and select the **`Iskaw`** subfolder inside the cloned repository (`.../agricultural-data-management-system-iskaw/Iskaw`).
+   > **Note:** Make sure only **`Iskaw`** is checked under *Projects*—do **not** import `DairyHub` or `DemoPt2`.
+4. Click **Finish**.
+
+### Step 3: Configure JavaFX Build Path & VM Arguments
+1. Right-click the **`Iskaw`** project in **Package Explorer** → **Build Path → Configure Build Path...**.
+2. Under the **Libraries** tab, select **Modulepath** (or **Classpath**) and click **Add External JARs...** (or add your JavaFX User Library), then select all `.jar` files inside your JavaFX SDK's `lib/` folder (`javafx.controls.jar`, `javafx.fxml.jar`, `javafx.graphics.jar`, `javafx.base.jar`, etc.).
+3. Click **Apply and Close**.
+4. Right-click **`Main.java`** (inside `src/application/`) → **Run As → Run Configurations...**.
+5. Select your Java Application configuration for `Main`, open the **Arguments** tab, and paste the following into **VM arguments** (replacing `/path/to/javafx-sdk/lib` with your actual JavaFX `lib` folder path):
+
+       --module-path "/path/to/javafx-sdk/lib" --add-modules javafx.controls,javafx.fxml,javafx.graphics
+
+6. Ensure the **Working directory** under the **Arguments** tab is set to **Default** (`${workspace_loc:Iskaw}`) so the app loads `Iskaw/data/` properly.
+7. Click **Apply** and **Run**.
+
+---
+
+## Default Login Credentials
+
+When running with the seeded sample data, use any of the following accounts on the login screen:
 
 | Role | Username | Password |
-|---|---|---|
-| Manager | `manager` | `manager123` |
-| Clerk | `clerk1` / `clerk2` | `clerk123` |
-| Customer | `customer1` | `customer123` |
+| :--- | :--- | :--- |
+| **Manager** | `manager` | `manager123` |
+| **Clerk 1** | `clerk1` | `clerk123` |
+| **Clerk 2** | `clerk2` | `clerk123` |
+| **Customer** | `customer1` | `customer123` |
 
-New customers can also sign up themselves with **"New customer? Create an account"** on the login screen.
+*(New customers can also register their own accounts directly from the **Create an account** option on the login screen.)*
 
-## What each user can do
+---
 
-**Manager** – full read/write: add/edit/delete products, restock, record sales and donations, void transactions,
-create clerk accounts (**Accounts** screen), see the transaction history, monitor every clerk's sale history on the Manager Dashboard
-and open **each clerk's own dashboard**.
+## User Manual
 
-**Clerk** – record customer purchases, check inventory, record cash and item donations, and void any recorded
-transaction (stock and wallet are corrected automatically). When selling, a clerk can link the sale to a registered customer.
-Clerks cannot add products, restock or manage accounts.
+### 1. Customer Guide
+Customers have access to **Dashboard**, **Shop**, and **My Orders**:
+* **Dashboard:** View a summary of your pending orders, completed purchases, and quick shortcuts to the shop.
+* **Shop:**
+  * Filter products by category (**Milk**, **Cheese**, **Yogurt**, **Butter & Cream**, **Frozen**, **Sweets**, **Beef**, **Cowhide**) or search by product name.
+  * Enter the desired quantity for in-stock items and add them to your cart.
+  * Click **Place Order** to submit a pre-order for staff fulfillment.
+* **My Orders:** Track the real-time status of your orders (`Pending`, `Completed`, or `Cancelled`). You may cancel an order while it is still `Pending`.
 
-**Customer** – signs up on the login screen, then can:
-* browse the **Shop** (price and availability for every product), add items to a **cart** and **place an order**;
-* follow and cancel their orders under **My Orders**;
-* see their **Customer Dashboard**: total spent, purchases, items bought, pending orders, favourite products and
-  purchase history with receipts.
+---
 
-Customers cannot record transactions or change any data. Payment is cash at pick-up: a placed order does not change
-stock or the wallet. When the customer collects it, a clerk (or the manager) opens **Customer Orders** and fulfils it,
-which records a normal sale linked to the customer (stock goes down, the wallet goes up, the purchase appears on the
-customer's dashboard). Staff can also cancel pending orders; fulfilling fails safely (the order stays pending) if the
-stock has run out in the meantime.
+### 2. Clerk Guide
+Clerks handle front-counter operations across **Dashboard**, **New Sale**, **Customer Orders**, **Inventory**, and **Cash & Transactions**:
+* **Dashboard:** View your personal shift sales summary, pending customer orders count, and low-stock alerts.
+* **New Sale (POS):**
+  * Select products and quantities to add to the transaction cart.
+  * Optionally link the sale to a registered customer account or record it as a walk-in customer.
+  * Enter the **Cash Tendered** amount to automatically compute change and complete the sale (deducting stock immediately).
+* **Customer Orders:**
+  * Review incoming `Pending` orders placed by customers.
+  * Click **Fulfill Order**, enter cash tendered, and confirm to convert the order into a completed sale and deduct inventory.
+* **Inventory:** View live stock levels and identify items running low on stock.
+* **Cash & Transactions:**
+  * View the store's net cash balance and full transaction ledger.
+  * Click **Record Cash Donation** to log monetary donations into the store wallet.
+  * Click **Record Item Donation** to log custom in-kind donations (donor name, item name, quantity, and notes) earmarked for charity without affecting store stock.
+  * Void erroneous transactions if needed (automatically restoring deducted product stock).
 
-## Persistence
+---
 
-All data is saved automatically after every change to `data/dairyhub.dat` (created next to where the program is
-run). Delete that file to reset to the sample data. If the file is ever unreadable it is renamed
-`dairyhub.dat.corrupt` and sample data is loaded instead.
+### 3. Manager Guide
+Managers have full access to all Clerk screens plus administrative control over **Products**, **Charity Donations**, and **Accounts**:
+* **Dashboard:** Monitor overall store revenue, net wallet balance, low-stock warnings, pending orders, and individual clerk performance.
+* **Products:**
+  * **Add / Edit Products:** Set product names, descriptions, categories, units (e.g., `1 L`, `1 kg`, `250 g`), prices, and initial stock.
+  * **Product Photos:** Upload (`PNG`, `JPG`, `GIF`, `BMP` up to 8 MB) or remove product images displayed in the shop and catalog.
+  * **Restock / Delete:** Add new stock shipments to existing items or remove discontinued products.
+* **Charity Donations:**
+  * View all in-kind items donated by the community in the **Donated Items Pool** alongside remaining available quantities.
+  * Click **Donate items to charity**, check the items to dispatch, specify the quantity for each item, enter the **Charity / Recipient** name and notes, and confirm.
+  * Review all past dispatches in the **Charity Dispatch History** table below.
+* **Accounts:**
+  * Create new **Clerk** accounts using the right-hand registration form.
+  * Select a clerk or customer row in the table and click **Delete selected account** to remove inactive accounts (manager accounts are protected against accidental deletion).
 
-## Project structure & OOP design
+---
 
-```
-application/Main.java           JavaFX entry point
-application/model/                    Business logic (no JavaFX)
-  DairySystem                   "System" class – users, products, transactions, permissions, persistence
-  User  (abstract) ─ Manager, Clerk, Customer   inheritance + polymorphic permissions (isManager, isStaff, getRole)
-  Product, Inventory, SaleLine
-  Order                         customer order (pending / completed / cancelled), turned into a sale on pick-up
-  Transaction (abstract) ─ SaleTransaction, CashDonation, ItemDonation
-                                polymorphism: each subtype defines its own cash amount and inventory effect
-  Dashboard                     read-only summaries for one user or for everyone
-  InsufficientStockException    custom checked exception
-application/ui/                       JavaFX screens
-  SceneManager                  window switching (Login <-> Shell)
-  Shell (+ Navigator)           sidebar frame; swaps View screens; menu depends on role (manager / clerk / customer)
-  View (abstract) ─ ClerkDashboardView, ManagerDashboardView, CustomerDashboardView,
-                    ShopView, CustomerOrdersView, StaffOrdersView, SalesView, InventoryView,
-                    ProductsView, WalletView, StaffView (Accounts)
-  Reusable components           StatCard, TransactionTable, LowStockPanel, FormDialog, Logo, Ui helpers
-```
+## Project Structure
 
-* **Encapsulation / validation:** model classes validate their own input and throw `IllegalArgumentException`;
-  passwords are stored as SHA-256 hashes.
-* **Error handling:** the UI never crashes on bad input – every failure (bad number, short cash, oversell,
-  duplicate product, wrong password, unreadable save file) becomes a readable message.
-* **Reusability:** `TransactionTable`, `StatCard`, `LowStockPanel`, `FormDialog` and the `Ui` helpers are shared by
-  several screens; the clerk dashboard class is reused for the manager's view of a clerk.
-
-## Product list (Milestone 1)
-
-| Product | Size | Price (₱) | Description |
-|---|---|---|---|
-| Fresh Carabao Milk | 1 L | 95 | Rich, creamy whole carabao milk, pasteurized and chilled. |
-| Fresh Cow's Milk | 1 L | 85 | Farm-fresh whole cow's milk, pasteurized. |
-| Chocolate Milk | 250 ml | 35 | Low-sugar chocolate drink made with fresh milk. |
-| Kesong Puti | 200 g | 120 | Soft, lightly salted white cheese made from carabao milk. |
-| Carabao Mozzarella | 250 g | 210 | Stretchy mozzarella, great for pizza and baking. |
-| Cream Cheese | 150 g | 130 | Smooth spreadable cream cheese. |
-| Plain Yogurt | 500 g | 110 | Thick, unsweetened yogurt with live cultures. |
-| Strawberry Yogurt Drink | 250 ml | 45 | Drinkable yogurt blended with real strawberries. |
-| Salted Butter | 200 g | 150 | Churned butter from fresh cream, lightly salted. |
-| All-Purpose Cream | 250 ml | 70 | Chilled table cream for desserts and sauces. |
-| Ube Ice Cream | 1 L | 260 | Creamy purple-yam ice cream. |
-| Pastillas de Leche | 10 pcs | 60 | Traditional milk candy, pack of 10 pieces. |
-
-The cooperative and its products are fictional sample data for this project; replace the name, logo and product
-list with your group's own business for Milestone 1 (the logo is drawn in `ui/Logo.java`).
-
-
-## Iskaw product categories
-
-The sample shop includes dairy products, beef cuts, and cowhide products. Beef prices are stored per 1 kg. Cowhide products are listed separately for Cognac, Dark Brown, and Dark Charcoal Gray so each color can have its own stock count. The cowhide prices are Full Hide ₱10,800, Half Hide ₱5,850, Quarter Hide ₱3,150, Coupon ₱1,500, Double Panel ₱650, and Panel ₱350.
-
-The product banner and cow logo are temporary placeholders. Replace `src/application/images/iskaw-products-placeholder.png` and `ui/Logo.java` when the actual Iskaw product photos and logo are ready.
+    agricultural-data-management-system-iskaw/   (Branch: demo-dairyhub)
+    └── Iskaw/
+        ├── src/
+        │   └── application/
+        │       ├── Main.java                 # JavaFX application entry point
+        │       ├── style.css                 # Application theme and button styles
+        │       ├── model/                    # Domain models (ProductSystem, User, Product, Transaction, ItemDonation, CharityDispatch, Order, Inventory)
+        │       ├── storage/                  # Pipe-delimited file readers/writers & DataFiles manager
+        │       └── ui/                       # JavaFX views (Shell, LoginView, SalesView, ShopView, InventoryView, ProductsView, WalletView, CharityView, StaffView)
+        └── data/                             # Persisted text records & product images (auto-seeded if missing)
+            ├── users.txt
+            ├── products.txt
+            ├── transactions.txt
+            ├── orders.txt
+            ├── lines.txt
+            ├── charity_donations.txt
+            ├── charity_dispatches.txt
+            └── images/
