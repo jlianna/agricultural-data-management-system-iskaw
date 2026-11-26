@@ -107,7 +107,16 @@ public class ProductSystem {
         s.orders.addAll(OrderFileReader.read(files.orders(), lines));
         s.charityDonations.addAll(CharityDonationFileReader.read(files.charityDonations()));
         s.charityDispatches.addAll(CharityDispatchFileReader.read(files.charityDispatches()));
-
+        
+        // Make the transaction list and charity list share the same object for each donation.
+        Map<String, ItemDonation> pool = new LinkedHashMap<>();
+        for (ItemDonation d : s.charityDonations) pool.put(d.getId(), d);
+        	for (int i = 0; i < s.transactions.size(); i++) {
+	            Transaction t = s.transactions.get(i);
+		            if (t instanceof ItemDonation && pool.containsKey(t.getId()))
+		                s.transactions.set(i, pool.get(t.getId()));
+        }
+        
         // Migrate any existing ItemDonation records from transactions.txt into charityDonations
         Set<String> existingCharityIds = s.charityDonations.stream()
                 .map(ItemDonation::getId)

@@ -1,7 +1,7 @@
 package application.model;
 //A cash donation recorded in the wallet.
 public class CashDonation extends Transaction {
-	// Version ID used when saving or loading this object 
+
    private final String donor;
    private final double amount;
 
