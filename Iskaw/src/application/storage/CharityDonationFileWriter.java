@@ -26,6 +26,7 @@ public class CharityDonationFileWriter {
                     d.getCharityDistributionNotes()
             ));
         }
+        // the header line written at the top of the file
         Records.write(path,
                 "Iskaw charity donations: id|time|recorded by|voided|voided by|voided at|donor|item name|quantity|notes|donated qty|distribution notes",
                 lines);

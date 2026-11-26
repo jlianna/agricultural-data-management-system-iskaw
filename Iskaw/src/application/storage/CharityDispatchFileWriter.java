@@ -12,9 +12,11 @@ public class CharityDispatchFileWriter {
     public static void write(Path path, List<CharityDispatch> dispatches) throws IOException {
         List<String> lines = new ArrayList<>();
         for (CharityDispatch d : dispatches) {
+        	// store items into single field
             String packedItems = d.getItems().entrySet().stream()
                     .map(e -> e.getKey().replace(";", ",").replace("=", "-") + "=" + e.getValue())
                     .collect(Collectors.joining(";"));
+            // join the 6 fields with |
             lines.add(Records.row(
                     d.getId(),
                     d.getTimestamp(),
@@ -24,6 +26,7 @@ public class CharityDispatchFileWriter {
                     packedItems
             ));
         }
+        // the header line written at the top of the file
         Records.write(path,
                 "Iskaw charity dispatches: id|time|dispatched by|charity|notes|items",
                 lines);
