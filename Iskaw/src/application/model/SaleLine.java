@@ -1,10 +1,8 @@
 package application.model;
 
-import java.io.Serializable;
 
 //One line of a sale: a product, a quantity and the price at the time of sale.
-public class SaleLine implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class SaleLine{
 
     private final String productId;
     private final String productName;
