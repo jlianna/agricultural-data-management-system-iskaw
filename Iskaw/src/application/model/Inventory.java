@@ -1,12 +1,10 @@
 package application.model;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 //Tracks the on-hand quantity of every product.
-public class Inventory implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Inventory{
 
     //Stock at or below this level is flagged as "low". 
     public static final int LOW_STOCK_THRESHOLD = 10;

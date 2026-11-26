@@ -1,10 +1,9 @@
 package application.model;
 
-import java.io.Serializable;
+
 
 //A dairy product offered for sale (name, description, price, etc.).
-public class Product implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Product{
 
     private final String id;
     private String name;

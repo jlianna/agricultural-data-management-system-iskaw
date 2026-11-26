@@ -1,6 +1,6 @@
 package application.model;
 
-import java.io.Serializable;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 // Represents a batch of donated items dispatched to a charity recipient
-public class CharityDispatch implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class CharityDispatch{
+
 
     private final String id;
     private LocalDateTime timestamp;

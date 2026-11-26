@@ -2,7 +2,6 @@ package application.model;
 
 // Represents an in-kind item donation designated for charity (does not affect business inventory).
 public class ItemDonation extends Transaction {
-    private static final long serialVersionUID = 1L;
 
     private final String donor;
     private final String itemName;

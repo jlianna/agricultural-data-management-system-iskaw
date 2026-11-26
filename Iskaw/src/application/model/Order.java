@@ -1,6 +1,6 @@
 package application.model;
 
-import java.io.Serializable;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +12,7 @@ import java.util.stream.Collectors;
 // when the customer picks it up and pays cash, a clerk fulfils it, which records a normal
 // linked to the customer.
 
-public class Order implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Order{
 
     public enum Status {
         PENDING("Pending"), COMPLETED("Completed"), CANCELLED("Cancelled");
